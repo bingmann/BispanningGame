@@ -47,13 +47,16 @@ import edu.uci.ics.jung.algorithms.layout.RadiusGraphElementAccessor;
 import edu.uci.ics.jung.visualization.Layer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbstractGraphMousePlugin;
-import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
+import edu.uci.ics.jung.visualization.control.LayoutScalingControl;
+import edu.uci.ics.jung.visualization.control.PickingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.PluggableGraphMouse;
 import edu.uci.ics.jung.visualization.control.ScalingGraphMousePlugin;
-import edu.uci.ics.jung.visualization.control.ViewTranslatingGraphMousePlugin;
+import edu.uci.ics.jung.visualization.control.TranslatingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.decorators.EdgeShape;
+import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.DefaultEdgeLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.DefaultVertexLabelRenderer;
+import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 
 public class Applet extends javax.swing.JPanel {
 
@@ -67,7 +70,6 @@ public class Applet extends javax.swing.JPanel {
 	
 	MyEdge mHoverEdge;
 	
-	@SuppressWarnings("unused")
 	public Applet() {
 	
 		mGraph = MyGraph.getRandomGraph(8);
@@ -80,20 +82,19 @@ public class Applet extends javax.swing.JPanel {
         vv.setBackground(Color.WHITE);
 
         PluggableGraphMouse gm = new PluggableGraphMouse();
-        gm.add(new ViewTranslatingGraphMousePlugin(MouseEvent.BUTTON3_MASK));
+        gm.add(new TranslatingGraphMousePlugin(MouseEvent.BUTTON3_MASK));
         gm.add(new MyGraphMousePlugin(MouseEvent.BUTTON1_MASK | MouseEvent.BUTTON3_MASK));
-        gm.add(new MyPickingGraphMousePlugin<Number,MyEdge>());
-        gm.add(new ScalingGraphMousePlugin(new CrossoverScalingControl(), 0, 1.1f, 0.9f));
+        gm.add(new PickingGraphMousePlugin<Number,MyEdge>());
+        gm.add(new ScalingGraphMousePlugin(new LayoutScalingControl(), 0, 1.1f, 0.9f));
         vv.setGraphMouse(gm);
 
-        if (false)
-        {
-        	vv.getRenderContext().setVertexLabelRenderer(new DefaultVertexLabelRenderer(Color.cyan));
-        	vv.getRenderContext().setVertexLabelTransformer(new Transformer<Number,String>(){
-        		public String transform(Number v) {
-        			return "v" + v;
-        		}});
-        }
+        vv.getRenderContext().setVertexLabelRenderer(new DefaultVertexLabelRenderer(Color.black));
+        vv.getRenderContext().setVertexLabelTransformer(new Transformer<Number,String>(){
+        	public String transform(Number v) {
+        		return "v" + v;
+        	}});
+        vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<Number>());
+        vv.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
         
         vv.getRenderContext().setVertexDrawPaintTransformer(new MyVertexDrawPaintFunction<Number>());
         vv.getRenderContext().setVertexFillPaintTransformer(new MyVertexFillPaintFunction());
@@ -102,11 +103,12 @@ public class Applet extends javax.swing.JPanel {
         vv.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line<Number,MyEdge>());
         vv.getRenderContext().setEdgeDrawPaintTransformer(new MyEdgePaintFunction());
         
-        vv.getRenderContext().setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.cyan));
+        vv.getRenderContext().setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.black));
         vv.getRenderContext().setEdgeLabelTransformer(new Transformer<MyEdge,String>() {
             public String transform(MyEdge e) {
                 return e.toString();
             }});
+        vv.getRenderContext().setLabelOffset(6);
         
         mPickSupport = new RadiusGraphElementAccessor<Number,MyEdge>();
         vv.setPickSupport(mPickSupport);
@@ -136,24 +138,28 @@ public class Applet extends javax.swing.JPanel {
 			if (count1 == 1)
 				return Color.RED;
 			if (count2 == 1)
-				return Color.BLUE;
-										
+				return new Color(0,192,255);
+			
 			return Color.LIGHT_GRAY;
 		}
 	}
 
 	public class MyEdgeStrokeFunction implements Transformer<MyEdge,Stroke> {
-        protected final Stroke THIN = new BasicStroke(3);
-        protected final Stroke THICK = new BasicStroke(6);
+        protected final int THIN = 3;
+        protected final int THICK = 5;
 
-        public Stroke transform2(MyEdge e) {
-        	if (e.inCircle) {
-        		return (e.isFix ? THICK : THIN);
-        	}        		
-        	return (e.isUE ? THICK : THIN);
-        }
         public Stroke transform(MyEdge e) {
-        	return (e == mHoverEdge ? THICK : THIN);
+        	int size = 0;
+        	
+        	if (e.inCircle)
+        		size = (e.isFix ? THICK : THIN);
+        	else
+        		size = (e.isUE ? THICK : THIN);
+
+        	if (e == mHoverEdge)
+        		size += 2;
+
+        	return new BasicStroke(size);
         }
 	}
  
@@ -175,7 +181,8 @@ public class Applet extends javax.swing.JPanel {
 		}
 	}
 
-	class MyGraphMousePlugin extends AbstractGraphMousePlugin implements MouseListener, MouseMotionListener
+	class MyGraphMousePlugin extends AbstractGraphMousePlugin
+							 implements MouseListener, MouseMotionListener
 	{
 		MyEdge mMarkedge = null;
 		boolean mHaveCycle = false;
@@ -193,7 +200,7 @@ public class Applet extends javax.swing.JPanel {
 			
 			Point2D p = e.getPoint();
 			
-			p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.VIEW, p);
+			p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.LAYOUT, p);
 			
 	        final MyEdge edge = mPickSupport.getEdge(mVV.getGraphLayout(), p.getX(), p.getY());
 	         
@@ -340,7 +347,7 @@ public class Applet extends javax.swing.JPanel {
 		public void mouseMoved(MouseEvent e) {
 			Point2D p = e.getPoint();	 
 
-			p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.VIEW, p);
+			p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.LAYOUT, p);
 
 			MyEdge edge = mPickSupport.getEdge(mVV.getGraphLayout(), p.getX(), p.getY());
 			
@@ -351,7 +358,6 @@ public class Applet extends javax.swing.JPanel {
 			}
 		}
 	}
-
 		
 	public static void main(String[] s) {
 		JFrame jf = new JFrame("Bispanning Graph Game");
@@ -379,5 +385,4 @@ public class Applet extends javax.swing.JPanel {
         mVV.setGraphLayout(layout);
         mGraph.calcUniqueExchanges();
 	}	
-	
 }
