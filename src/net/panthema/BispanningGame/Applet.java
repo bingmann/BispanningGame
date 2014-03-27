@@ -334,16 +334,8 @@ public class Applet extends javax.swing.JPanel {
 		}
 				
 		public void mouseEntered(MouseEvent e) {
+			mouseMoved(e);
 		}
-		public void mouseExited(MouseEvent e) {
-		}
-		public void mousePressed(MouseEvent e) {
-		}
-		public void mouseReleased(MouseEvent e) {
-		}
-		public void mouseDragged(MouseEvent e) {
-		}
-
 		public void mouseMoved(MouseEvent e) {
 			Point2D p = e.getPoint();	 
 
@@ -356,6 +348,16 @@ public class Applet extends javax.swing.JPanel {
 				mHoverEdge = edge;
 				mVV.repaint();
 			}
+		}
+		public void mouseExited(MouseEvent e) {
+			mHoverEdge = null;
+			mVV.repaint();
+		}
+		public void mousePressed(MouseEvent e) {
+		}
+		public void mouseReleased(MouseEvent e) {
+		}
+		public void mouseDragged(MouseEvent e) {
 		}
 	}
 		
