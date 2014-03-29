@@ -22,127 +22,127 @@
 
 package net.panthema.BispanningGame;
 
-class ByteReader6 {
+class ByteReader6
+{
+    private byte[] mBytes;
+    private int mSize, mPos, mBit;
 
-	private byte[] mBytes;
-	private int mSize, mPos, mBit;
+    public ByteReader6(String s6) {
+        mBytes = s6.getBytes();
+        mSize = s6.length();
+        mPos = mBit = 0;
+    }
 
-	public ByteReader6(String s6) {
-		mBytes = s6.getBytes();
-		mSize = s6.length();
-		mPos = mBit = 0;
-	}
+    // ! whether k bits are available
+    boolean have_bits(int k) {
+        return (mPos + (mBit + k - 1) / 6) < mSize;
+    }
 
-	// ! whether k bits are available
-	boolean have_bits(int k) {
-		return (mPos + (mBit + k - 1) / 6) < mSize;
-	}
+    // ! return the next integer encoded in graph6
+    int get_number() {
+        assert (mPos < mSize);
 
-	// ! return the next integer encoded in graph6
-	int get_number() {
-		assert(mPos < mSize);
+        byte c = mBytes[mPos];
+        assert (c >= 63);
+        c -= 63;
+        ++mPos;
 
-		byte c = mBytes[mPos];
-		assert(c >= 63);
-		c -= 63;
-		++mPos;
+        if (c < 126)
+            return c;
 
-		if (c < 126)
-			return c;
+        assert (false);
+        return 0;
+    }
 
-		assert(false);
-		return 0;
-	}
+    // ! return the next bit encoded in graph6
+    int get_bit() {
+        assert (mPos < mSize);
 
-	// ! return the next bit encoded in graph6
-	int get_bit() {
-		assert(mPos < mSize);
+        byte c = mBytes[mPos];
+        assert (c >= 63);
+        c -= 63;
+        c >>= (5 - mBit);
 
-		byte c = mBytes[mPos];
-		assert(c >= 63);
-		c -= 63;
-		c >>= (5 - mBit);
+        mBit++;
+        if (mBit == 6) {
+            mPos++;
+            mBit = 0;
+        }
 
-		mBit++;
-		if (mBit == 6) {
-			mPos++;
-			mBit = 0;
-		}
+        return (c & 0x01);
+    }
 
-		return (c & 0x01);
-	}
+    // ! return the next bits as an integer
+    int get_bits(int k) {
+        int v = 0;
 
-	// ! return the next bits as an integer
-	int get_bits(int k) {
-		int v = 0;
+        for (int i = 0; i < k; ++i) {
+            v *= 2;
+            v += get_bit();
+        }
 
-		for (int i = 0; i < k; ++i) {
-			v *= 2;
-			v += get_bit();
-		}
-
-		return v;
-	}
+        return v;
+    }
 }
 
-public class Graph6 {
-	
-	public static MyGraph read_sparse6(String str) {
-		
-		ByteReader6 br6 = new ByteReader6(str);
+public class Graph6
+{
+    public static MyGraph read_sparse6(String str) {
 
-		int numVertex = br6.get_number();
-		int k = (int) Math.ceil(Math.log(numVertex) / Math.log(2));
+        ByteReader6 br6 = new ByteReader6(str);
 
-		MyGraph g = new MyGraph();
+        int numVertex = br6.get_number();
+        int k = (int) Math.ceil(Math.log(numVertex) / Math.log(2));
 
-		for (int i = 0; i < numVertex; ++i)
-			g.addVertex(i);
+        MyGraph g = new MyGraph();
 
-		int v = 0, numEdge = 0;
+        for (int i = 0; i < numVertex; ++i)
+            g.addVertex(i);
 
-		while (br6.have_bits(1 + k)) {
-			int b = br6.get_bit();
-			int x = br6.get_bits(k);
+        int v = 0, numEdge = 0;
 
-			if (x >= numVertex)
-				break;
+        while (br6.have_bits(1 + k)) {
+            int b = br6.get_bit();
+            int x = br6.get_bits(k);
 
-			if (b != 0)
-				v = v + 1;
-			if (v >= numVertex)
-				break;
+            if (x >= numVertex)
+                break;
 
-			if (x > v)
-				v = x;
-			else {
-				//System.out.println("add edge " + x + " - " + v + "!");
-				g.addEdge(new MyEdge(numEdge++), x, v);
-			}
-		}
+            if (b != 0)
+                v = v + 1;
+            if (v >= numVertex)
+                break;
 
-		return g;
-	}
+            if (x > v)
+                v = x;
+            else {
+                // System.out.println("add edge " + x + " - " + v + "!");
+                g.addEdge(new MyEdge(numEdge++), x, v);
+            }
+        }
 
-	public static MyGraph read_graph6(String str) {
-		if (str.charAt(0) == ':')
-			return read_sparse6(str.substring(1));
+        return g;
+    }
 
-		ByteReader6 br6 = new ByteReader6(str);
-		int n = br6.get_number();
+    public static MyGraph read_graph6(String str) {
+        if (str.charAt(0) == ':')
+            return read_sparse6(str.substring(1));
 
-		MyGraph g = new MyGraph();
+        ByteReader6 br6 = new ByteReader6(str);
+        int n = br6.get_number();
 
-		int numEdge = 0;
+        MyGraph g = new MyGraph();
 
-		for (int j = 1; j < n; ++j) {
-			for (int i = 0; i < j; ++i) {
-				int e = br6.get_bit();
-				if (e != 0) {
-					g.addEdge(new MyEdge(numEdge++), i, j);
-				}
-			}
-		}
-		return g;
-	}
+        int numEdge = 0;
+
+        for (int j = 1; j < n; ++j) {
+            for (int i = 0; i < j; ++i) {
+                int e = br6.get_bit();
+                if (e != 0) {
+                    g.addEdge(new MyEdge(numEdge++), i, j);
+                }
+            }
+        }
+        return g;
+    }
 }

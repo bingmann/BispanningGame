@@ -32,13 +32,14 @@ import edu.uci.ics.jung.graph.Graph;
 
 /**
  * Algorithm to construct two spanning trees in a bispanning graph.
+ * 
  * @author Timo Bingmann
  */
-public class AlgBispanning {
-
+public class AlgBispanning
+{
     /** Simple debug output */
     @SuppressWarnings("unused")
-	private void debug(String str) {
+    private void debug(String str) {
         if (false)
             System.out.println(str);
     }
@@ -207,8 +208,7 @@ public class AlgBispanning {
                 debug("Edge is in a clump");
             }
             // check two simple cases
-            else if (mCount1 != mGraph.getVertexCount() - 1 &&
-                     mUnion1.find(e0_x) != mUnion1.find(e0_y)) {
+            else if (mCount1 != mGraph.getVertexCount() - 1 && mUnion1.find(e0_x) != mUnion1.find(e0_y)) {
                 debug("Edge added directly to tree 1");
 
                 e0.color = 1;
@@ -217,8 +217,7 @@ public class AlgBispanning {
                 mCount--;
             }
             // check two simple cases
-            else if (mCount2 != mGraph.getVertexCount() - 1 &&
-                     mUnion2.find(e0_x) != mUnion2.find(e0_y)) {
+            else if (mCount2 != mGraph.getVertexCount() - 1 && mUnion2.find(e0_x) != mUnion2.find(e0_y)) {
                 debug("Edge added directly to tree 2");
 
                 e0.color = 2;
@@ -250,18 +249,16 @@ public class AlgBispanning {
 
             debug("number of colored edges: " + count[0] + " / " + count[1] + " / " + count[2]);
 
-            assert(mCount == count[0]);
-            assert(mCount1 == count[1]);
-            assert(mCount2 == count[2]);
+            assert (mCount == count[0]);
+            assert (mCount1 == count[1]);
+            assert (mCount2 == count[2]);
 
-            if (mCount1 == mGraph.getVertexCount() - 1 &&
-                mCount2 == mGraph.getVertexCount() - 1)
+            if (mCount1 == mGraph.getVertexCount() - 1 && mCount2 == mGraph.getVertexCount() - 1)
                 break;
         }
     }
 
     public boolean isOkay() {
-        return (mCount1 == mGraph.getVertexCount() - 1 &&
-        		mCount2 == mGraph.getVertexCount() - 1);
+        return (mCount1 == mGraph.getVertexCount() - 1 && mCount2 == mGraph.getVertexCount() - 1);
     }
 }

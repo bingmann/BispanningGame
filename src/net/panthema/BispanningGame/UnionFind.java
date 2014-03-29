@@ -38,13 +38,12 @@ public class UnionFind
 
     /**
      * Construct a disjoint sets object.
-     *
+     * 
      * numElements is the initial number of elements -- also the initial number
      * of disjoint sets, since every element is initially in its own set.
      */
-    public UnionFind(int numElements)
-    {
-        array = new int [numElements];
+    public UnionFind(int numElements) {
+        array = new int[numElements];
         for (int i = 0; i < array.length; i++) {
             array[i] = -1;
         }
@@ -53,36 +52,33 @@ public class UnionFind
     /**
      * find() finds the (int) name of the set containing a given element.
      * Performs path compression along the way.
-     *
-     * x is the element sought.
-     * returns the set containing x.
+     * 
+     * x is the element sought. returns the set containing x.
      */
-    public int find(int x)
-    {
+    public int find(int x) {
         if (array[x] < 0) {
-            return x;  // x is the root of the tree; return it
+            return x; // x is the root of the tree; return it
         }
         else {
             // Find out who the root is; compress path by making the root x's
             // parent.
             array[x] = find(array[x]);
-            return array[x];  // Return the root
+            return array[x]; // Return the root
         }
     }
 
     /**
      * union() unites two disjoint sets into a single set. A union-by-rank
      * heuristic is used to choose the new root.
-     *
-     * a is an element in the first set.
-     * b is an element in the first set.
+     * 
+     * a is an element in the first set. b is an element in the first set.
      */
-    public void union(int a, int b)
-    {
+    public void union(int a, int b) {
         int root_a = find(a);
         int root_b = find(b);
 
-        if (root_a == root_b) return;
+        if (root_a == root_b)
+            return;
 
         if (array[root_b] < array[root_a]) {
             // root_b has more elements, so leave it as the root.
@@ -97,13 +93,11 @@ public class UnionFind
         }
     }
 
-    public void union(Number a, Number b)
-    {
+    public void union(Number a, Number b) {
         union(a.intValue(), b.intValue());
     }
 
-    public int find(Number x)
-    {
+    public int find(Number x) {
         return find(x.intValue());
     }
 }
