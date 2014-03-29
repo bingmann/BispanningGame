@@ -67,7 +67,14 @@ public class GamePanel extends javax.swing.JPanel
 
     protected RadiusGraphElementAccessor<Number, MyEdge> mPickSupport;
 
-    MyEdge mHoverEdge;
+    /** Edge over which the mouse hovers */
+    protected MyEdge mHoverEdge;
+
+    /** Edge marked by user */
+    protected MyEdge mMarkedge = null;
+
+    /** Flag if a cycle/cut exists in the graph */
+    protected boolean mHaveCycle = false;
 
     public GamePanel() {
 
@@ -190,9 +197,6 @@ public class GamePanel extends javax.swing.JPanel
 
     class MyGraphMousePlugin extends AbstractGraphMousePlugin implements MouseListener, MouseMotionListener
     {
-        MyEdge mMarkedge = null;
-        boolean mHaveCycle = false;
-
         public MyGraphMousePlugin(int modifiers) {
             super(modifiers);
         }
@@ -434,7 +438,11 @@ public class GamePanel extends javax.swing.JPanel
             return;
         }
 
-        this.mGraph = g;
+        mGraph = g;
+        mHoverEdge = null;
+        mMarkedge = null;
+        mHaveCycle = false;
+
         final Layout<Number, MyEdge> layout = new KKLayout<Number, MyEdge>(mGraph);
         mVV.setGraphLayout(layout);
         mGraph.calcUniqueExchanges();
