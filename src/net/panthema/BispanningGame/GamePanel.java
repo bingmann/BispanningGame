@@ -1,5 +1,5 @@
 /*******************************************************************************
- * src/net/panthema/BispanningGame/Applet.java
+ * src/net/panthema/BispanningGame/GamePanel.java
  *
  * Main Window of the Java Applet.
  *
@@ -34,7 +34,6 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 
 import javax.swing.AbstractAction;
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -58,7 +57,7 @@ import edu.uci.ics.jung.visualization.renderers.DefaultEdgeLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.DefaultVertexLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 
-public class Applet extends javax.swing.JPanel
+public class GamePanel extends javax.swing.JPanel
 {
     private static final long serialVersionUID = 7526217664458188502L;
 
@@ -70,7 +69,7 @@ public class Applet extends javax.swing.JPanel
 
     MyEdge mHoverEdge;
 
-    public Applet() {
+    public GamePanel() {
 
         mGraph = MyGraph.getRandomGraph(8);
         mGraph.calcUniqueExchanges();
@@ -422,14 +421,6 @@ public class Applet extends javax.swing.JPanel
 
         public void mouseDragged(MouseEvent e) {
         }
-    }
-
-    public static void main(String[] s) {
-        JFrame jf = new JFrame("Bispanning Graph Game");
-        jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        jf.getContentPane().add(new Applet());
-        jf.pack();
-        jf.setVisible(true);
     }
 
     void makeNewRandomGraph(int numVertex) {
