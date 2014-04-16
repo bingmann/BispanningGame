@@ -63,9 +63,17 @@ public class GamePanel extends javax.swing.JPanel
 
     private MyGraph mGraph;
 
+    /** Jung2 visualization object */
     protected VisualizationViewer<Number, MyEdge> mVV;
 
+    /** Jung2 object for getting nearest vertex or edge */
     protected RadiusGraphElementAccessor<Number, MyEdge> mPickSupport;
+
+    /** Jung2 layouting object */
+    protected Layout<Number, MyEdge> mLayout;
+
+    /** Vertex Counter **/
+    protected int mNextVertex;
 
     /** Edge over which the mouse hovers */
     protected MyEdge mHoverEdge;
@@ -78,51 +86,50 @@ public class GamePanel extends javax.swing.JPanel
 
     public GamePanel() {
 
-        mGraph = MyGraph.getRandomGraph(8);
-        mGraph.calcUniqueExchanges();
-
         setBackground(Color.WHITE);
 
-        final Layout<Number, MyEdge> layout = new KKLayout<Number, MyEdge>(mGraph);
-        final VisualizationViewer<Number, MyEdge> vv = mVV = new VisualizationViewer<Number, MyEdge>(layout);
-        vv.setBackground(Color.WHITE);
+        makeNewRandomGraph(8);
+        mLayout = new KKLayout<Number, MyEdge>(mGraph);
+
+        mVV = new VisualizationViewer<Number, MyEdge>(mLayout);
+        mVV.setBackground(Color.WHITE);
 
         PluggableGraphMouse gm = new PluggableGraphMouse();
+        gm.add(new MyEditingGraphMousePlugin<Number, MyEdge>(MouseEvent.CTRL_MASK, new MyVertexFactory(), new MyEdgeFactory()));
         gm.add(new TranslatingGraphMousePlugin(MouseEvent.BUTTON3_MASK));
         gm.add(new MyGraphMousePlugin(MouseEvent.BUTTON1_MASK | MouseEvent.BUTTON3_MASK));
         gm.add(new PickingGraphMousePlugin<Number, MyEdge>());
         gm.add(new ScalingGraphMousePlugin(new LayoutScalingControl(), 0, 1.1f, 0.9f));
-        vv.setGraphMouse(gm);
+        mVV.setGraphMouse(gm);
 
-        vv.getRenderContext().setVertexLabelRenderer(new DefaultVertexLabelRenderer(Color.black));
-        vv.getRenderContext().setVertexLabelTransformer(new Transformer<Number, String>() {
+        mVV.getRenderContext().setVertexLabelRenderer(new DefaultVertexLabelRenderer(Color.black));
+        mVV.getRenderContext().setVertexLabelTransformer(new Transformer<Number, String>() {
             public String transform(Number v) {
                 return "v" + v;
             }
         });
-        vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<Number>());
-        vv.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
+        mVV.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<Number>());
+        mVV.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
 
-        vv.getRenderContext().setVertexDrawPaintTransformer(new MyVertexDrawPaintFunction<Number>());
-        vv.getRenderContext().setVertexFillPaintTransformer(new MyVertexFillPaintFunction());
+        mVV.getRenderContext().setVertexDrawPaintTransformer(new MyVertexDrawPaintFunction<Number>());
+        mVV.getRenderContext().setVertexFillPaintTransformer(new MyVertexFillPaintFunction());
 
-        vv.getRenderContext().setEdgeStrokeTransformer(new MyEdgeStrokeFunction());
-        vv.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line<Number, MyEdge>());
-        vv.getRenderContext().setEdgeDrawPaintTransformer(new MyEdgePaintFunction());
+        mVV.getRenderContext().setEdgeStrokeTransformer(new MyEdgeStrokeFunction());
+        mVV.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line<Number, MyEdge>());
+        mVV.getRenderContext().setEdgeDrawPaintTransformer(new MyEdgePaintFunction());
 
-        vv.getRenderContext().setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.black));
-        vv.getRenderContext().setEdgeLabelTransformer(new Transformer<MyEdge, String>() {
+        mVV.getRenderContext().setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.black));
+        mVV.getRenderContext().setEdgeLabelTransformer(new Transformer<MyEdge, String>() {
             public String transform(MyEdge e) {
                 return e.toString();
             }
         });
-        vv.getRenderContext().setLabelOffset(6);
+        mVV.getRenderContext().setLabelOffset(6);
 
         mPickSupport = new RadiusGraphElementAccessor<Number, MyEdge>();
-        vv.setPickSupport(mPickSupport);
 
         setLayout(new BorderLayout());
-        add(vv, BorderLayout.CENTER);
+        add(mVV, BorderLayout.CENTER);
     }
 
     public class MyVertexDrawPaintFunction<V> implements Transformer<V, Paint>
@@ -153,6 +160,13 @@ public class GamePanel extends javax.swing.JPanel
                 return new Color(0, 192, 255);
 
             return Color.LIGHT_GRAY;
+        }
+    }
+
+    public class MyVertexFactory implements org.apache.commons.collections15.Factory<Number>
+    {
+        public Number create() {
+            return mGraph.getVertexCount();
         }
     }
 
@@ -195,13 +209,26 @@ public class GamePanel extends javax.swing.JPanel
         }
     }
 
+    public class MyEdgeFactory implements org.apache.commons.collections15.Factory<MyEdge>
+    {
+        public MyEdge create() {
+            return new MyEdge(mGraph.getEdgeCount());
+        }
+    }
+
     class MyGraphMousePlugin extends AbstractGraphMousePlugin implements MouseListener, MouseMotionListener
     {
         public MyGraphMousePlugin(int modifiers) {
             super(modifiers);
         }
 
+        Point2D mClickPoint;
+
         public void mouseClicked(MouseEvent e) {
+
+            if ((e.getModifiers() & MouseEvent.CTRL_MASK) != 0) {
+                return;
+            }
 
             if ((e.getModifiers() & MouseEvent.BUTTON3_MASK) != 0) {
                 showPopup(e);
@@ -385,6 +412,8 @@ public class GamePanel extends javax.swing.JPanel
 
                 public void actionPerformed(ActionEvent e) {
                     String input = JOptionPane.showInputDialog(null, "Enter graph6/sparse6 string:", "");
+                    if (input == null)
+                        return;
                     MyGraph g = Graph6.read_graph6(input);
                     setNewGraph(g);
                 }
@@ -392,6 +421,37 @@ public class GamePanel extends javax.swing.JPanel
 
             popup.add(newGraph);
 
+            popup.add(new AbstractAction("Delete Vertex") {
+                private static final long serialVersionUID = 571719411573657791L;
+
+                public void actionPerformed(ActionEvent e) {
+                    Point2D p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.LAYOUT, mClickPoint);
+
+                    Number v = mPickSupport.getVertex(mVV.getGraphLayout(), p.getX(), p.getY());
+                    if (v == null)
+                        return;
+
+                    mGraph.removeVertex(v);
+                    mVV.repaint();
+                }
+            });
+
+            popup.add(new AbstractAction("Delete Edge") {
+                private static final long serialVersionUID = 571719411573657791L;
+
+                public void actionPerformed(ActionEvent e) {
+                    Point2D p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.LAYOUT, mClickPoint);
+
+                    MyEdge edge = mPickSupport.getEdge(mVV.getGraphLayout(), p.getX(), p.getY());
+                    if (edge == null)
+                        return;
+
+                    mGraph.removeEdge(edge);
+                    mVV.repaint();
+                }
+            });
+
+            mClickPoint = e.getPoint();
             popup.show(mVV, e.getX(), e.getY());
         }
 
@@ -442,9 +502,13 @@ public class GamePanel extends javax.swing.JPanel
         mHoverEdge = null;
         mMarkedge = null;
         mHaveCycle = false;
+        mNextVertex = g.getVertexCount();
 
-        final Layout<Number, MyEdge> layout = new KKLayout<Number, MyEdge>(mGraph);
-        mVV.setGraphLayout(layout);
         mGraph.calcUniqueExchanges();
+
+        if (mVV != null) {
+            mLayout = new KKLayout<Number, MyEdge>(mGraph);
+            mVV.setGraphLayout(mLayout);
+        }
     }
 }
