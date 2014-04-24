@@ -69,6 +69,9 @@ public class GamePanel extends javax.swing.JPanel
     /** Jung2 object for getting nearest vertex or edge */
     protected RadiusGraphElementAccessor<Number, MyEdge> mPickSupport;
 
+    /** distance of picking support */
+    protected final static double mPickDistance = 32;
+
     /** Jung2 layouting object */
     protected Layout<Number, MyEdge> mLayout;
 
@@ -239,7 +242,7 @@ public class GamePanel extends javax.swing.JPanel
 
             p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.LAYOUT, p);
 
-            final MyEdge edge = mPickSupport.getEdge(mVV.getGraphLayout(), p.getX(), p.getY());
+            final MyEdge edge = mPickSupport.getEdge(mVV.getGraphLayout(), p.getX(), p.getY(), mPickDistance);
 
             if (edge == null)
                 return;
@@ -427,7 +430,7 @@ public class GamePanel extends javax.swing.JPanel
                 public void actionPerformed(ActionEvent e) {
                     Point2D p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.LAYOUT, mClickPoint);
 
-                    Number v = mPickSupport.getVertex(mVV.getGraphLayout(), p.getX(), p.getY());
+                    Number v = mPickSupport.getVertex(mVV.getGraphLayout(), p.getX(), p.getY(), mPickDistance);
                     if (v == null)
                         return;
 
@@ -442,7 +445,7 @@ public class GamePanel extends javax.swing.JPanel
                 public void actionPerformed(ActionEvent e) {
                     Point2D p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.LAYOUT, mClickPoint);
 
-                    MyEdge edge = mPickSupport.getEdge(mVV.getGraphLayout(), p.getX(), p.getY());
+                    MyEdge edge = mPickSupport.getEdge(mVV.getGraphLayout(), p.getX(), p.getY(), mPickDistance);
                     if (edge == null)
                         return;
 
@@ -464,7 +467,7 @@ public class GamePanel extends javax.swing.JPanel
 
             p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.LAYOUT, p);
 
-            MyEdge edge = mPickSupport.getEdge(mVV.getGraphLayout(), p.getX(), p.getY());
+            MyEdge edge = mPickSupport.getEdge(mVV.getGraphLayout(), p.getX(), p.getY(), mPickDistance);
 
             if (edge != mHoverEdge) {
                 mHoverEdge = edge;
