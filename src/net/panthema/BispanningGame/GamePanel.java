@@ -25,6 +25,8 @@ package net.panthema.BispanningGame;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
@@ -32,13 +34,26 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 import javax.swing.AbstractAction;
+import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.commons.collections15.Transformer;
+
+import com.itextpdf.awt.DefaultFontMapper;
+import com.itextpdf.awt.PdfGraphics2D;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfWriter;
 
 import edu.uci.ics.jung.algorithms.layout.KKLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
@@ -454,6 +469,20 @@ public class GamePanel extends javax.swing.JPanel
                 }
             });
 
+            popup.add(new AbstractAction("Write PDF") {
+                private static final long serialVersionUID = 571719411573657792L;
+
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        writePdf();
+                    } catch (FileNotFoundException e1) {
+                        e1.printStackTrace();
+                    } catch (DocumentException de) {
+                        System.err.println(de.getMessage());
+                    }
+                }
+            });
+
             mClickPoint = e.getPoint();
             popup.show(mVV, e.getX(), e.getY());
         }
@@ -513,5 +542,50 @@ public class GamePanel extends javax.swing.JPanel
             mLayout = new KKLayout<Number, MyEdge>(mGraph);
             mVV.setGraphLayout(mLayout);
         }
+    }
+
+    public void writePdf() throws FileNotFoundException, DocumentException {
+
+        // Query user for filename
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Specify PDF file to save");
+        chooser.setCurrentDirectory(new File("."));
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("PDF Documents", "pdf");
+        chooser.setFileFilter(filter);
+
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+            return;
+
+        File outfile = chooser.getSelectedFile();
+        if (!outfile.getAbsolutePath().endsWith(".pdf")) {
+            outfile = new File(outfile.getAbsolutePath() + ".pdf");
+        }
+
+        // Calculate page size rectangle
+        Dimension size = mVV.getSize();
+        Rectangle rsize = new Rectangle(size.width, size.height);
+
+        // Open the PDF file for writing - and create a Graphics2D object
+        Document document = new Document(rsize);
+        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(outfile));
+        document.open();
+
+        PdfContentByte contentByte = writer.getDirectContent();
+        PdfGraphics2D graphics2d = new PdfGraphics2D(contentByte, size.width, size.height, new DefaultFontMapper());
+
+        // Create a container to hold the visualisation
+        Container container = new Container();
+        container.addNotify();
+        container.add(mVV);
+        container.setVisible(true);
+        container.paintComponents(graphics2d);
+
+        // Dispose of the graphics and close the document
+        graphics2d.dispose();
+        document.close();
+
+        // Put mVV pack onto visible plane
+        setLayout(new BorderLayout());
+        add(mVV, BorderLayout.CENTER);
     }
 }

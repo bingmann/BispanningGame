@@ -15,6 +15,7 @@
 			<attribute name="javadoc_location" value="http://jung.sourceforge.net/doc/api/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/itextpdf-5.5.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 	<referencedentry kind="lib" path="lib/jung-api-2.0.1.jar">
 		<attributes>
