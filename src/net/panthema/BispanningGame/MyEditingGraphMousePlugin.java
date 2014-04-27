@@ -122,6 +122,9 @@ public class MyEditingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin im
                     Layout<V, E> layout = vv.getModel().getGraphLayout();
                     graph.addVertex(newVertex);
                     layout.setLocation(newVertex, vv.getRenderContext().getMultiLayerTransformer().inverseTransform(e.getPoint()));
+
+                    if (graph instanceof MyGraph)
+                        ((MyGraph) graph).graphChanged();
                 }
             }
             vv.repaint();
@@ -146,6 +149,10 @@ public class MyEditingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin im
                 if (vertex != null && startVertex != null) {
                     Graph<V, E> graph = vv.getGraphLayout().getGraph();
                     graph.addEdge(edgeFactory.create(), startVertex, vertex, EdgeType.UNDIRECTED);
+
+                    if (graph instanceof MyGraph)
+                        ((MyGraph) graph).graphChanged();
+
                     vv.repaint();
                 }
             }

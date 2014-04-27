@@ -87,6 +87,9 @@ class MyGraph extends SparseGraph<Number, MyEdge>
 {
     private static final long serialVersionUID = -6036820402858303673L;
 
+    /** Message to post render onto graph */
+    public String message;
+
     /** Generate a simple random bispanning graph with numVertex nodes */
     static MyGraph getRandomGraph(int numVertex) {
         while (true) {
@@ -287,6 +290,20 @@ class MyGraph extends SparseGraph<Number, MyEdge>
         for (MyEdge ei : getEdges()) {
             ei.inCircle = false;
             ei.isFix = false;
+        }
+    }
+
+    /** Called by EditingGraphMousePlugin when the graph changed. */
+    void graphChanged() {
+        System.out.println("Graph changed!");
+
+        AlgBispanning ab = new AlgBispanning(this);
+        if (ab.isOkay()) {
+            message = "";
+            calcUniqueExchanges();
+        }
+        else {
+            message = "Graph is not bispanning!";
         }
     }
 }

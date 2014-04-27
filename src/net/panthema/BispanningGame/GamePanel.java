@@ -27,6 +27,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
@@ -112,6 +115,7 @@ public class GamePanel extends javax.swing.JPanel
         mVV = new VisualizationViewer<Number, MyEdge>(mLayout);
         mVV.setBackground(Color.WHITE);
 
+        // set up mouse handling
         PluggableGraphMouse gm = new PluggableGraphMouse();
         gm.add(new MyEditingGraphMousePlugin<Number, MyEdge>(MouseEvent.CTRL_MASK, new MyVertexFactory(), new MyEdgeFactory()));
         gm.add(new TranslatingGraphMousePlugin(MouseEvent.BUTTON3_MASK));
@@ -120,6 +124,7 @@ public class GamePanel extends javax.swing.JPanel
         gm.add(new ScalingGraphMousePlugin(new LayoutScalingControl(), 0, 1.1f, 0.9f));
         mVV.setGraphMouse(gm);
 
+        // set vertex and label drawing
         mVV.getRenderContext().setVertexLabelRenderer(new DefaultVertexLabelRenderer(Color.black));
         mVV.getRenderContext().setVertexLabelTransformer(new Transformer<Number, String>() {
             public String transform(Number v) {
@@ -144,7 +149,11 @@ public class GamePanel extends javax.swing.JPanel
         });
         mVV.getRenderContext().setLabelOffset(6);
 
+        // create pick support to select closest nodes and edges
         mPickSupport = new RadiusGraphElementAccessor<Number, MyEdge>();
+
+        // add post renderer to show error messages in background
+        mVV.addPostRenderPaintable(new MyGraphPostRenderer());
 
         setLayout(new BorderLayout());
         add(mVV, BorderLayout.CENTER);
@@ -231,6 +240,45 @@ public class GamePanel extends javax.swing.JPanel
     {
         public MyEdge create() {
             return new MyEdge(mGraph.getEdgeCount());
+        }
+    }
+
+    class MyGraphPostRenderer implements VisualizationViewer.Paintable
+    {
+        Font font;
+        FontMetrics metrics;
+        int swidth, sheight;
+        String str;
+
+        public void paint(Graphics g) {
+            Dimension d = mVV.getSize();
+            if (font == null) {
+                font = new Font(g.getFont().getName(), Font.BOLD, 20);
+            }
+            if (str != mGraph.message) {
+                str = mGraph.message;
+                if (str == null)
+                    return;
+
+                metrics = g.getFontMetrics(font);
+                swidth = metrics.stringWidth(str);
+                sheight = metrics.getMaxAscent() + metrics.getMaxDescent();
+            }
+            if (str == null)
+                return;
+
+            int x = (d.width - swidth) / 2;
+            int y = (int) (d.height - sheight * 1.5);
+
+            g.setFont(font);
+            Color oldColor = g.getColor();
+            g.setColor(Color.red);
+            g.drawString(str, x, y);
+            g.setColor(oldColor);
+        }
+
+        public boolean useTransform() {
+            return false;
         }
     }
 
