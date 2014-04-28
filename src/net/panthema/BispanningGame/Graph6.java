@@ -22,6 +22,8 @@
 
 package net.panthema.BispanningGame;
 
+import java.io.ByteArrayOutputStream;
+
 class ByteReader6
 {
     private byte[] mBytes;
@@ -85,6 +87,71 @@ class ByteReader6
     }
 }
 
+// ! Auxiliary class for writing graph6/sparse6 encoded strings
+class ByteWriter6
+{
+    ByteArrayOutputStream bo;
+
+    /** current bit index */
+    private int mBit;
+
+    /** current byte */
+    private byte mCurr;
+
+    /** initialize empty string and zero bits */
+    ByteWriter6() {
+        bo = new ByteArrayOutputStream();
+        mCurr = 0;
+        mBit = 0;
+    }
+
+    /** append an integer to the graph6 string */
+    public void put_number(int i) {
+        if (i < 63) {
+            bo.write(63 + i);
+            mCurr = 0;
+            mBit = 0;
+        }
+        else {
+            assert (false);
+        }
+    }
+
+    /** append a bit to the graph6 string */
+    public void put_bit(boolean b) {
+        if (mBit == 6) {
+            bo.write(63 + mCurr);
+            mCurr = 0;
+            mBit = 0;
+        }
+
+        if (b) {
+            mCurr |= 1 << (5 - mBit);
+        }
+
+        mBit++;
+    }
+
+    public void put_bit(int b) {
+        put_bit(b != 0);
+    }
+
+    // ! write bits as an integer
+    public void put_bits(int v, int k) {
+
+        for (int i = k; i > 0; --i) {
+            put_bit((v >> (i - 1)) & 1);
+        }
+    }
+
+    /** output remaining data */
+    public void flush() {
+        bo.write(63 + mCurr);
+        mCurr = 0;
+        mBit = 0;
+    }
+};
+
 public class Graph6
 {
     public static MyGraph read_sparse6(String str) {
@@ -144,5 +211,24 @@ public class Graph6
             }
         }
         return g;
+    }
+
+    public static String write_graph6(MyGraph g) {
+
+        ByteWriter6 bw = new ByteWriter6();
+        int n = g.getVertexCount();
+        bw.put_number(n);
+
+        for (int j = 1; j < n; ++j) {
+            for (int i = 0; i < j; ++i) {
+                // detected parallel edges -> switch to sparse6 format
+                // if (count > 1) return write_sparse6(g);
+
+                bw.put_bit(g.findEdge(i, j) != null);
+            }
+        }
+        bw.flush();
+
+        return bw.bo.toString();
     }
 }

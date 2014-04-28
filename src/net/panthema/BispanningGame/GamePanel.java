@@ -46,6 +46,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JTextArea;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.commons.collections15.Transformer;
@@ -342,6 +343,13 @@ public class GamePanel extends javax.swing.JPanel
 
         public void showPopup(MouseEvent e) {
             JMenu newGraph = new JMenu("New Random Graph");
+            newGraph.add(new AbstractAction("1 Vertex") {
+                private static final long serialVersionUID = 571719411573657773L;
+
+                public void actionPerformed(ActionEvent e) {
+                    makeNewRandomGraph(1);
+                }
+            });
             newGraph.add(new AbstractAction("4 Vertices") {
                 private static final long serialVersionUID = 571719411573657774L;
 
@@ -517,8 +525,17 @@ public class GamePanel extends javax.swing.JPanel
                 }
             });
 
-            popup.add(new AbstractAction("Write PDF") {
+            popup.add(new AbstractAction("Print graph6") {
                 private static final long serialVersionUID = 571719411573657792L;
+
+                public void actionPerformed(ActionEvent e) {
+                    JTextArea text = new JTextArea("graph6: " + Graph6.write_graph6(mGraph));
+                    JOptionPane.showMessageDialog(null, text);
+                }
+            });
+
+            popup.add(new AbstractAction("Write PDF") {
+                private static final long serialVersionUID = 571719411573657793L;
 
                 public void actionPerformed(ActionEvent e) {
                     try {
