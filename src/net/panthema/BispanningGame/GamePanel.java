@@ -135,12 +135,15 @@ public class GamePanel extends javax.swing.JPanel
         mVV.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<Number>());
         mVV.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
 
-        mVV.getRenderContext().setVertexDrawPaintTransformer(new MyVertexDrawPaintFunction<Number>());
-        mVV.getRenderContext().setVertexFillPaintTransformer(new MyVertexFillPaintFunction());
+        mVV.getRenderer().setEdgeRenderer(new MyEdgeRenderer());
+        mVV.getRenderContext().setVertexDrawPaintTransformer(new MyVertexDrawPaintTransformer<Number>());
+        mVV.getRenderContext().setVertexFillPaintTransformer(new MyVertexFillPaintTransformer());
 
-        mVV.getRenderContext().setEdgeStrokeTransformer(new MyEdgeStrokeFunction());
+        mVV.getRenderContext().setEdgeStrokeTransformer(new MyEdgeStrokeTransformer());
         mVV.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line<Number, MyEdge>());
-        mVV.getRenderContext().setEdgeDrawPaintTransformer(new MyEdgePaintFunction());
+
+        mVV.getRenderContext().setEdgeDrawPaintTransformer(new MyEdgeDrawPaintTransformer());
+        mVV.getRenderContext().setEdgeFillPaintTransformer(new MyEdgeFillPaintTransformer());
 
         mVV.getRenderContext().setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.black));
         mVV.getRenderContext().setEdgeLabelTransformer(new Transformer<MyEdge, String>() {
@@ -160,14 +163,14 @@ public class GamePanel extends javax.swing.JPanel
         add(mVV, BorderLayout.CENTER);
     }
 
-    public class MyVertexDrawPaintFunction<V> implements Transformer<V, Paint>
+    public class MyVertexDrawPaintTransformer<V> implements Transformer<V, Paint>
     {
         public Paint transform(V v) {
             return Color.black;
         }
     }
 
-    public class MyVertexFillPaintFunction implements Transformer<Number, Paint>
+    public class MyVertexFillPaintTransformer implements Transformer<Number, Paint>
     {
         public Paint transform(Number v) {
 
@@ -198,10 +201,10 @@ public class GamePanel extends javax.swing.JPanel
         }
     }
 
-    public class MyEdgeStrokeFunction implements Transformer<MyEdge, Stroke>
+    public class MyEdgeStrokeTransformer implements Transformer<MyEdge, Stroke>
     {
-        protected final int THIN = 3;
-        protected final int THICK = 5;
+        protected final int THIN = 4;
+        protected final int THICK = 6;
 
         public Stroke transform(MyEdge e) {
             int size = 0;
@@ -218,7 +221,7 @@ public class GamePanel extends javax.swing.JPanel
         }
     }
 
-    public class MyEdgePaintFunction implements Transformer<MyEdge, Paint>
+    public class MyEdgeDrawPaintTransformer implements Transformer<MyEdge, Paint>
     {
         public Paint transform(MyEdge e) {
             if (e.color == 1 && !e.inCircle)
@@ -233,6 +236,17 @@ public class GamePanel extends javax.swing.JPanel
                 return new Color(0, 192, 255);
             if (e.color == 2 && e.inCircle && !e.isFix)
                 return new Color(192, 255, 255);
+            return Color.BLACK;
+        }
+    }
+
+    public class MyEdgeFillPaintTransformer implements Transformer<MyEdge, Paint>
+    {
+        public Paint transform(MyEdge e) {
+            if (e.origColor == 1)
+                return Color.RED;
+            if (e.origColor == 2)
+                return Color.BLUE;
             return Color.BLACK;
         }
     }
@@ -481,6 +495,15 @@ public class GamePanel extends javax.swing.JPanel
                 }
             });
 
+            popup.add(new AbstractAction("Update Original Colors") {
+                private static final long serialVersionUID = 571719411573657796L;
+
+                public void actionPerformed(ActionEvent e) {
+                    mGraph.updateOriginalColor();
+                    mVV.repaint();
+                }
+            });
+
             popup.add(new AbstractAction("Load graph6/sparse6") {
                 private static final long serialVersionUID = 571719411573657792L;
 
@@ -511,7 +534,7 @@ public class GamePanel extends javax.swing.JPanel
             });
 
             popup.add(new AbstractAction("Delete Edge") {
-                private static final long serialVersionUID = 571719411573657791L;
+                private static final long serialVersionUID = 571719411573657794L;
 
                 public void actionPerformed(ActionEvent e) {
                     Point2D p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.LAYOUT, mClickPoint);
@@ -602,6 +625,7 @@ public class GamePanel extends javax.swing.JPanel
         mNextVertex = g.getVertexCount();
 
         mGraph.calcUniqueExchanges();
+        mGraph.updateOriginalColor();
 
         if (mVV != null) {
             mLayout = new KKLayout<Number, MyEdge>(mGraph);

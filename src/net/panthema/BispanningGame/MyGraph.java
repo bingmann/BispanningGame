@@ -43,6 +43,9 @@ class MyEdge implements Comparable<MyEdge>
     /** color: 0=black, 1=red, 2=blue */
     int color;
 
+    /** original color: 0=black, 1=red, 2=blue */
+    int origColor;
+
     /** boolean if edge leads to a unique exchange */
     boolean isUE;
 
@@ -56,6 +59,7 @@ class MyEdge implements Comparable<MyEdge>
     public MyEdge(int id) {
         this.id = id;
         this.color = 0;
+        this.origColor = 0;
     }
 
     /** Construct edge label */
@@ -290,6 +294,13 @@ class MyGraph extends SparseGraph<Number, MyEdge>
         for (MyEdge ei : getEdges()) {
             ei.inCircle = false;
             ei.isFix = false;
+        }
+    }
+
+    /** Update original color fields from current color */
+    void updateOriginalColor() {
+        for (MyEdge ei : getEdges()) {
+            ei.origColor = ei.color;
         }
     }
 
