@@ -254,7 +254,7 @@ class MyGraph extends SparseGraph<Number, MyEdge>
 
         e0.flipColor();
         if (!markCycle(e0))
-            throw new RuntimeException("Bad!");
+            return false; // Bad!
 
         int excount = 0;
 
@@ -312,9 +312,11 @@ class MyGraph extends SparseGraph<Number, MyEdge>
         if (ab.isOkay()) {
             message = "";
             calcUniqueExchanges();
+            System.out.println("Graph is bispanning!");
         }
         else {
             message = "Graph is not bispanning!";
+            System.out.println(message);
         }
     }
 }

@@ -259,6 +259,8 @@ public class AlgBispanning
     }
 
     public boolean isOkay() {
+        if (mCount1 + mCount2 != mGraph.getEdgeCount())
+            return false;
         return (mCount1 == mGraph.getVertexCount() - 1 && mCount2 == mGraph.getVertexCount() - 1);
     }
 }
