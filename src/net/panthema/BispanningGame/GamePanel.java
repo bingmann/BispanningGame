@@ -534,6 +534,7 @@ public class GamePanel extends javax.swing.JPanel
                         return;
 
                     mGraph.removeVertex(v);
+                    mGraph.graphChanged();
                     mVV.repaint();
                 }
             });
@@ -549,6 +550,7 @@ public class GamePanel extends javax.swing.JPanel
                         return;
 
                     mGraph.removeEdge(edge);
+                    mGraph.graphChanged();
                     mVV.repaint();
                 }
             });
