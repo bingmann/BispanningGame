@@ -146,7 +146,7 @@ public class MyEditingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin im
             GraphElementAccessor<V, E> pickSupport = vv.getPickSupport();
             if (pickSupport != null) {
                 final V vertex = pickSupport.getVertex(layout, p.getX(), p.getY());
-                if (vertex != null && startVertex != null) {
+                if (vertex != null && startVertex != null && startVertex != vertex) {
                     Graph<V, E> graph = vv.getGraphLayout().getGraph();
                     graph.addEdge(edgeFactory.create(), startVertex, vertex, EdgeType.UNDIRECTED);
 
