@@ -38,19 +38,19 @@ import edu.uci.ics.jung.visualization.transform.LensTransformer;
 import edu.uci.ics.jung.visualization.transform.MutableTransformer;
 import edu.uci.ics.jung.visualization.transform.shape.GraphicsDecorator;
 
-public class MyEdgeRenderer implements Renderer.Edge<Number, MyEdge>
+public class MyEdgeRenderer implements Renderer.Edge<Integer, MyEdge>
 {
-    public void paintEdge(RenderContext<Number, MyEdge> rc, Layout<Number, MyEdge> layout, MyEdge e) {
+    public void paintEdge(RenderContext<Integer, MyEdge> rc, Layout<Integer, MyEdge> layout, MyEdge e) {
         GraphicsDecorator g2d = rc.getGraphicsContext();
-        Graph<Number, MyEdge> graph = layout.getGraph();
-        if (!rc.getEdgeIncludePredicate().evaluate(Context.<Graph<Number, MyEdge>, MyEdge> getInstance(graph, e)))
+        Graph<Integer, MyEdge> graph = layout.getGraph();
+        if (!rc.getEdgeIncludePredicate().evaluate(Context.<Graph<Integer, MyEdge>, MyEdge> getInstance(graph, e)))
             return;
 
         // don't draw edge if either incident vertex is not drawn
-        Pair<Number> endpoints = graph.getEndpoints(e);
-        Number v1 = endpoints.getFirst();
-        Number v2 = endpoints.getSecond();
-        if (!rc.getVertexIncludePredicate().evaluate(Context.<Graph<Number, MyEdge>, Number> getInstance(graph, v1)) || !rc.getVertexIncludePredicate().evaluate(Context.<Graph<Number, MyEdge>, Number> getInstance(graph, v2)))
+        Pair<Integer> endpoints = graph.getEndpoints(e);
+        Integer v1 = endpoints.getFirst();
+        Integer v2 = endpoints.getSecond();
+        if (!rc.getVertexIncludePredicate().evaluate(Context.<Graph<Integer, MyEdge>, Integer> getInstance(graph, v1)) || !rc.getVertexIncludePredicate().evaluate(Context.<Graph<Integer, MyEdge>, Integer> getInstance(graph, v2)))
             return;
 
         Stroke new_stroke = rc.getEdgeStrokeTransformer().transform(e);
@@ -73,13 +73,13 @@ public class MyEdgeRenderer implements Renderer.Edge<Number, MyEdge>
      * that its width is equal to the distance between <code>(x1,y1)</code> and
      * <code>(x2,y2)</code>.
      */
-    protected void drawSimpleEdge(RenderContext<Number, MyEdge> rc, Layout<Number, MyEdge> layout, MyEdge e) {
+    protected void drawSimpleEdge(RenderContext<Integer, MyEdge> rc, Layout<Integer, MyEdge> layout, MyEdge e) {
 
         GraphicsDecorator g = rc.getGraphicsContext();
-        Graph<Number, MyEdge> graph = layout.getGraph();
-        Pair<Number> endpoints = graph.getEndpoints(e);
-        Number v1 = endpoints.getFirst();
-        Number v2 = endpoints.getSecond();
+        Graph<Integer, MyEdge> graph = layout.getGraph();
+        Pair<Integer> endpoints = graph.getEndpoints(e);
+        Integer v1 = endpoints.getFirst();
+        Integer v2 = endpoints.getSecond();
 
         Point2D p1 = layout.transform(v1);
         Point2D p2 = layout.transform(v2);
@@ -92,7 +92,7 @@ public class MyEdgeRenderer implements Renderer.Edge<Number, MyEdge>
 
         boolean isLoop = v1.equals(v2);
         Shape s2 = rc.getVertexShapeTransformer().transform(v2);
-        Shape edgeShape = rc.getEdgeShapeTransformer().transform(Context.<Graph<Number, MyEdge>, MyEdge> getInstance(graph, e));
+        Shape edgeShape = rc.getEdgeShapeTransformer().transform(Context.<Graph<Integer, MyEdge>, MyEdge> getInstance(graph, e));
 
         boolean edgeHit = true;
         Rectangle deviceRectangle = null;
@@ -159,9 +159,9 @@ public class MyEdgeRenderer implements Renderer.Edge<Number, MyEdge>
         }
     }
 
-    protected EdgeArrowRenderingSupport<Number, MyEdge> edgeArrowRenderingSupport = new BasicEdgeArrowRenderingSupport<Number, MyEdge>();
+    protected EdgeArrowRenderingSupport<Integer, MyEdge> edgeArrowRenderingSupport = new BasicEdgeArrowRenderingSupport<Integer, MyEdge>();
 
-    public EdgeArrowRenderingSupport<Number, MyEdge> getEdgeArrowRenderingSupport() {
+    public EdgeArrowRenderingSupport<Integer, MyEdge> getEdgeArrowRenderingSupport() {
         return edgeArrowRenderingSupport;
     }
 

@@ -87,7 +87,7 @@ class MyEdge implements Comparable<MyEdge>
  * 
  * @author Timo Bingmann
  */
-class MyGraph extends SparseGraph<Number, MyEdge>
+class MyGraph extends SparseGraph<Integer, MyEdge>
 {
     private static final long serialVersionUID = -6036820402858303673L;
 
@@ -122,20 +122,20 @@ class MyGraph extends SparseGraph<Number, MyEdge>
 
     /** Test if e0 closes a cycle of the same color in the graph */
     boolean testCycle(MyEdge e0) {
-        Number e0_x = getEndpoints(e0).getFirst();
-        Number e0_y = getEndpoints(e0).getSecond();
+        Integer e0_x = getEndpoints(e0).getFirst();
+        Integer e0_y = getEndpoints(e0).getSecond();
 
-        Queue<Number> queue = new ArrayDeque<Number>();
+        Queue<Integer> queue = new ArrayDeque<Integer>();
 
         // initialize queue with node e0
         queue.add(e0_x);
 
-        Map<Number, Number> pred = new TreeMap<Number, Number>();
+        Map<Integer, Integer> pred = new TreeMap<Integer, Integer>();
         pred.put(e0_x, e0_x);
 
         // Breadth first search
         while (!queue.isEmpty()) {
-            Number v = queue.poll();
+            Integer v = queue.poll();
 
             for (MyEdge ei : getIncidentEdges(v)) {
                 if (ei.color != e0.color)
@@ -143,7 +143,7 @@ class MyGraph extends SparseGraph<Number, MyEdge>
                 if (ei == e0)
                     continue;
 
-                Number w = getOpposite(v, ei);
+                Integer w = getOpposite(v, ei);
 
                 if (pred.get(w) != null) // vertex already seen
                     continue;
@@ -164,20 +164,20 @@ class MyGraph extends SparseGraph<Number, MyEdge>
         for (MyEdge ei : getEdges())
             ei.inCircle = false;
 
-        Number e0_x = getEndpoints(e0).getFirst();
-        Number e0_y = getEndpoints(e0).getSecond();
+        Integer e0_x = getEndpoints(e0).getFirst();
+        Integer e0_y = getEndpoints(e0).getSecond();
 
-        Queue<Number> queue = new ArrayDeque<Number>();
+        Queue<Integer> queue = new ArrayDeque<Integer>();
 
         // initialize queue with node e0
         queue.add(e0_x);
 
-        Map<Number, Number> pred = new TreeMap<Number, Number>();
+        Map<Integer, Integer> pred = new TreeMap<Integer, Integer>();
         pred.put(e0_x, e0_x);
 
         // Breadth first search
         while (!queue.isEmpty()) {
-            Number v = queue.poll();
+            Integer v = queue.poll();
 
             for (MyEdge ei : getIncidentEdges(v)) {
                 if (ei.color != e0.color)
@@ -185,7 +185,7 @@ class MyGraph extends SparseGraph<Number, MyEdge>
                 if (ei == e0)
                     continue;
 
-                Number w = getOpposite(v, ei);
+                Integer w = getOpposite(v, ei);
 
                 if (pred.get(w) != null) // vertex already seen
                     continue;
@@ -197,7 +197,7 @@ class MyGraph extends SparseGraph<Number, MyEdge>
 
         if (pred.get(e0_y) != null) {
             // System.out.println("Found cycle");
-            Number y = e0_y;
+            Integer y = e0_y;
             while (pred.get(y) != y) {
                 MyEdge e = findEdge(y, pred.get(y));
                 assert (e != null);
@@ -236,7 +236,7 @@ class MyGraph extends SparseGraph<Number, MyEdge>
     }
 
     /** Return true if the vertex v is a leaf in the color tree */
-    boolean isTreeLeaf(Number v, int color) {
+    boolean isTreeLeaf(Integer v, int color) {
         int count = 0;
 
         for (MyEdge e : getIncidentEdges(v)) {
@@ -283,8 +283,8 @@ class MyGraph extends SparseGraph<Number, MyEdge>
             ei.isUE = testUniqueExchange(ei);
 
             if (false) {
-                Number x = getEndpoints(ei).getFirst();
-                Number y = getEndpoints(ei).getSecond();
+                Integer x = getEndpoints(ei).getFirst();
+                Integer y = getEndpoints(ei).getSecond();
 
                 if (isTreeLeaf(x, 1) || isTreeLeaf(y, 1) || isTreeLeaf(x, 2) || isTreeLeaf(y, 2))
                     ei.isUE = false;

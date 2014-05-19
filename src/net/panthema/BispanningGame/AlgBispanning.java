@@ -45,7 +45,7 @@ public class AlgBispanning
     }
 
     /** The processed graph */
-    private Graph<Number, MyEdge> mGraph;
+    private Graph<Integer, MyEdge> mGraph;
 
     /** Number of edges in trees */
     private int mCount, mCount1, mCount2;
@@ -54,16 +54,16 @@ public class AlgBispanning
     private UnionFind mUnion, mUnion1, mUnion2;
 
     /** Predecessor vertex in BFS tree of both colors */
-    private Map<Number, Number> mPred1, mPred2;
+    private Map<Integer, Integer> mPred1, mPred2;
 
     /** Calculate BFS tree from root with given color */
-    private void bfs_tree(int color, Number root) {
+    private void bfs_tree(int color, Integer root) {
 
-        Map<Number, Number> pred = (color == 1) ? mPred1 : mPred2;
+        Map<Integer, Integer> pred = (color == 1) ? mPred1 : mPred2;
         pred.clear();
 
         // BFS queue
-        Queue<Number> queue = new ArrayDeque<Number>();
+        Queue<Integer> queue = new ArrayDeque<Integer>();
 
         // Initialize queue with node root
         queue.add(root);
@@ -72,13 +72,13 @@ public class AlgBispanning
         // Breadth first search
         while (!queue.isEmpty()) {
 
-            Number v = queue.poll();
+            Integer v = queue.poll();
 
             for (MyEdge ei : mGraph.getIncidentEdges(v)) {
                 if (ei.color != color)
                     continue;
 
-                Number w = mGraph.getOpposite(v, ei);
+                Integer w = mGraph.getOpposite(v, ei);
 
                 if (pred.get(w) != null) // vertex already seen
                     continue;
@@ -97,8 +97,8 @@ public class AlgBispanning
         // initialize queue with node e0
         queue.add(e0);
 
-        Number e0_x = mGraph.getEndpoints(e0).getFirst();
-        Number e0_y = mGraph.getEndpoints(e0).getSecond();
+        Integer e0_x = mGraph.getEndpoints(e0).getFirst();
+        Integer e0_y = mGraph.getEndpoints(e0).getSecond();
 
         // erase labels
         Map<MyEdge, MyEdge> label = new TreeMap<MyEdge, MyEdge>();
@@ -110,11 +110,11 @@ public class AlgBispanning
             if (e == e0)
                 ti = firstcolor;
 
-            Map<Number, Number> pred = (ti == 1) ? mPred1 : mPred2;
+            Map<Integer, Integer> pred = (ti == 1) ? mPred1 : mPred2;
             UnionFind myunion = (ti == 1) ? mUnion1 : mUnion2;
 
-            Number e_v = mGraph.getEndpoints(e).getFirst();
-            Number e_w = mGraph.getEndpoints(e).getSecond();
+            Integer e_v = mGraph.getEndpoints(e).getFirst();
+            Integer e_w = mGraph.getEndpoints(e).getSecond();
 
             debug("Visiting " + e + " with color " + ti + "!");
             debug("Ends of " + e + ": " + myunion.find(e_v) + " - " + myunion.find(e_w));
@@ -147,7 +147,7 @@ public class AlgBispanning
 
             // pick the vertex u which is not the BFS root, and walk upwards to
             // find a part of the cycle
-            Number e_u;
+            Integer e_u;
             if (e_v != e0_x && label.get(mGraph.findEdge(e_v, pred.get(e_v))) == null)
                 e_u = e_v;
             else if (e_w != e0_x && label.get(mGraph.findEdge(e_w, pred.get(e_w))) == null)
@@ -180,7 +180,7 @@ public class AlgBispanning
         return false;
     }
 
-    public AlgBispanning(Graph<Number, MyEdge> aGraph) {
+    public AlgBispanning(Graph<Integer, MyEdge> aGraph) {
         mGraph = aGraph;
 
         mCount = mGraph.getEdgeCount();
@@ -197,16 +197,16 @@ public class AlgBispanning
         mUnion1 = new UnionFind(edgeMax + 1);
         mUnion2 = new UnionFind(edgeMax + 1);
 
-        mPred1 = new TreeMap<Number, Number>();
-        mPred2 = new TreeMap<Number, Number>();
+        mPred1 = new TreeMap<Integer, Integer>();
+        mPred2 = new TreeMap<Integer, Integer>();
 
         for (MyEdge e : mGraph.getEdges())
             e.color = 0;
 
         // iterate over all edges and try to put them into a tree.
         for (MyEdge e0 : mGraph.getEdges()) {
-            Number e0_x = mGraph.getEndpoints(e0).getFirst();
-            Number e0_y = mGraph.getEndpoints(e0).getSecond();
+            Integer e0_x = mGraph.getEndpoints(e0).getFirst();
+            Integer e0_y = mGraph.getEndpoints(e0).getSecond();
 
             if (e0.color != 0)
                 continue;

@@ -84,16 +84,16 @@ public class GamePanel extends javax.swing.JPanel
     private MyGraph mGraph;
 
     /** Jung2 visualization object */
-    protected VisualizationViewer<Number, MyEdge> mVV;
+    protected VisualizationViewer<Integer, MyEdge> mVV;
 
     /** Jung2 object for getting nearest vertex or edge */
-    protected RadiusGraphElementAccessor<Number, MyEdge> mPickSupport;
+    protected RadiusGraphElementAccessor<Integer, MyEdge> mPickSupport;
 
     /** distance of picking support */
     protected final static double mPickDistance = 32;
 
     /** Jung2 layouting object */
-    protected Layout<Number, MyEdge> mLayout;
+    protected Layout<Integer, MyEdge> mLayout;
 
     /** Vertex Counter **/
     protected int mNextVertex;
@@ -114,34 +114,34 @@ public class GamePanel extends javax.swing.JPanel
         makeNewRandomGraph(8);
         mLayout = MyGraphLayoutFactory(mGraph);
 
-        mVV = new VisualizationViewer<Number, MyEdge>(mLayout);
+        mVV = new VisualizationViewer<Integer, MyEdge>(mLayout);
         mVV.setBackground(Color.WHITE);
 
         // set up mouse handling
         PluggableGraphMouse gm = new PluggableGraphMouse();
-        gm.add(new MyEditingGraphMousePlugin<Number, MyEdge>(MouseEvent.CTRL_MASK, new MyVertexFactory(), new MyEdgeFactory()));
+        gm.add(new MyEditingGraphMousePlugin<Integer, MyEdge>(MouseEvent.CTRL_MASK, new MyVertexFactory(), new MyEdgeFactory()));
         gm.add(new TranslatingGraphMousePlugin(MouseEvent.BUTTON3_MASK));
         gm.add(new MyGraphMousePlugin(MouseEvent.BUTTON1_MASK | MouseEvent.BUTTON3_MASK));
-        gm.add(new PickingGraphMousePlugin<Number, MyEdge>());
+        gm.add(new PickingGraphMousePlugin<Integer, MyEdge>());
         gm.add(new ScalingGraphMousePlugin(new LayoutScalingControl(), 0, 1.1f, 0.9f));
         mVV.setGraphMouse(gm);
 
         // set vertex and label drawing
         mVV.getRenderContext().setVertexLabelRenderer(new DefaultVertexLabelRenderer(Color.black));
-        mVV.getRenderContext().setVertexLabelTransformer(new Transformer<Number, String>() {
-            public String transform(Number v) {
+        mVV.getRenderContext().setVertexLabelTransformer(new Transformer<Integer, String>() {
+            public String transform(Integer v) {
                 return "v" + v;
             }
         });
-        mVV.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<Number>());
+        mVV.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<Integer>());
         mVV.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
 
         mVV.getRenderer().setEdgeRenderer(new MyEdgeRenderer());
-        mVV.getRenderContext().setVertexDrawPaintTransformer(new MyVertexDrawPaintTransformer<Number>());
+        mVV.getRenderContext().setVertexDrawPaintTransformer(new MyVertexDrawPaintTransformer<Integer>());
         mVV.getRenderContext().setVertexFillPaintTransformer(new MyVertexFillPaintTransformer());
 
         mVV.getRenderContext().setEdgeStrokeTransformer(new MyEdgeStrokeTransformer());
-        mVV.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line<Number, MyEdge>());
+        mVV.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line<Integer, MyEdge>());
 
         mVV.getRenderContext().setEdgeDrawPaintTransformer(new MyEdgeDrawPaintTransformer());
         mVV.getRenderContext().setEdgeFillPaintTransformer(new MyEdgeFillPaintTransformer());
@@ -155,7 +155,7 @@ public class GamePanel extends javax.swing.JPanel
         mVV.getRenderContext().setLabelOffset(6);
 
         // create pick support to select closest nodes and edges
-        mPickSupport = new RadiusGraphElementAccessor<Number, MyEdge>();
+        mPickSupport = new RadiusGraphElementAccessor<Integer, MyEdge>();
 
         // add post renderer to show error messages in background
         mVV.addPostRenderPaintable(new MyGraphPostRenderer());
@@ -164,8 +164,8 @@ public class GamePanel extends javax.swing.JPanel
         add(mVV, BorderLayout.CENTER);
     }
 
-    static AbstractLayout<Number, MyEdge> MyGraphLayoutFactory(MyGraph g) {
-        return new FRLayout<Number, MyEdge>(g);
+    static AbstractLayout<Integer, MyEdge> MyGraphLayoutFactory(MyGraph g) {
+        return new FRLayout<Integer, MyEdge>(g);
     }
 
     public class MyVertexDrawPaintTransformer<V> implements Transformer<V, Paint>
@@ -175,9 +175,9 @@ public class GamePanel extends javax.swing.JPanel
         }
     }
 
-    public class MyVertexFillPaintTransformer implements Transformer<Number, Paint>
+    public class MyVertexFillPaintTransformer implements Transformer<Integer, Paint>
     {
-        public Paint transform(Number v) {
+        public Paint transform(Integer v) {
 
             int count1 = 0, count2 = 0;
 
@@ -199,9 +199,9 @@ public class GamePanel extends javax.swing.JPanel
         }
     }
 
-    public class MyVertexFactory implements org.apache.commons.collections15.Factory<Number>
+    public class MyVertexFactory implements org.apache.commons.collections15.Factory<Integer>
     {
-        public Number create() {
+        public Integer create() {
             return mGraph.getVertexCount();
         }
     }
@@ -495,7 +495,7 @@ public class GamePanel extends javax.swing.JPanel
                 private static final long serialVersionUID = 571719411573657791L;
 
                 public void actionPerformed(ActionEvent e) {
-                    final AbstractLayout<Number, MyEdge> layout = MyGraphLayoutFactory(mGraph);
+                    final AbstractLayout<Integer, MyEdge> layout = MyGraphLayoutFactory(mGraph);
                     mVV.setGraphLayout(layout);
                 }
             });
@@ -529,7 +529,7 @@ public class GamePanel extends javax.swing.JPanel
                 public void actionPerformed(ActionEvent e) {
                     Point2D p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.LAYOUT, mClickPoint);
 
-                    Number v = mPickSupport.getVertex(mVV.getGraphLayout(), p.getX(), p.getY(), mPickDistance);
+                    Integer v = mPickSupport.getVertex(mVV.getGraphLayout(), p.getX(), p.getY(), mPickDistance);
                     if (v == null)
                         return;
 

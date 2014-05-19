@@ -93,11 +93,11 @@ public class UnionFind
         }
     }
 
-    public void union(Number a, Number b) {
+    public void union(Integer a, Integer b) {
         union(a.intValue(), b.intValue());
     }
 
-    public int find(Number x) {
+    public int find(Integer x) {
         return find(x.intValue());
     }
 }
