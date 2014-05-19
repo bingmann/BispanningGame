@@ -59,7 +59,8 @@ import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
 
-import edu.uci.ics.jung.algorithms.layout.KKLayout;
+import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
+import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.RadiusGraphElementAccessor;
 import edu.uci.ics.jung.visualization.Layer;
@@ -111,7 +112,7 @@ public class GamePanel extends javax.swing.JPanel
         setBackground(Color.WHITE);
 
         makeNewRandomGraph(8);
-        mLayout = new KKLayout<Number, MyEdge>(mGraph);
+        mLayout = MyGraphLayoutFactory(mGraph);
 
         mVV = new VisualizationViewer<Number, MyEdge>(mLayout);
         mVV.setBackground(Color.WHITE);
@@ -161,6 +162,10 @@ public class GamePanel extends javax.swing.JPanel
 
         setLayout(new BorderLayout());
         add(mVV, BorderLayout.CENTER);
+    }
+
+    static AbstractLayout<Number, MyEdge> MyGraphLayoutFactory(MyGraph g) {
+        return new FRLayout<Number, MyEdge>(g);
     }
 
     public class MyVertexDrawPaintTransformer<V> implements Transformer<V, Paint>
@@ -490,7 +495,7 @@ public class GamePanel extends javax.swing.JPanel
                 private static final long serialVersionUID = 571719411573657791L;
 
                 public void actionPerformed(ActionEvent e) {
-                    final Layout<Number, MyEdge> layout = new KKLayout<Number, MyEdge>(mGraph);
+                    final AbstractLayout<Number, MyEdge> layout = MyGraphLayoutFactory(mGraph);
                     mVV.setGraphLayout(layout);
                 }
             });
@@ -628,7 +633,7 @@ public class GamePanel extends javax.swing.JPanel
         mGraph.updateOriginalColor();
 
         if (mVV != null) {
-            mLayout = new KKLayout<Number, MyEdge>(mGraph);
+            mLayout = MyGraphLayoutFactory(mGraph);
             mVV.setGraphLayout(mLayout);
         }
     }
