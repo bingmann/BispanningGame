@@ -36,6 +36,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -107,6 +109,9 @@ public class GamePanel extends javax.swing.JPanel
     /** Flag if a cycle/cut exists in the graph */
     protected boolean mHaveCycle = false;
 
+    /** Scale the edge stroke thickness using mouse wheel */
+    double edgeScale = 1.0;
+
     public GamePanel() {
 
         setBackground(Color.WHITE);
@@ -145,6 +150,7 @@ public class GamePanel extends javax.swing.JPanel
 
         mVV.getRenderContext().setEdgeDrawPaintTransformer(new MyEdgeDrawPaintTransformer());
         mVV.getRenderContext().setEdgeFillPaintTransformer(new MyEdgeFillPaintTransformer());
+        mVV.getRenderContext().setEdgeArrowStrokeTransformer(new MyEdgeInnerStrokeTransformer());
 
         mVV.getRenderContext().setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.black));
         mVV.getRenderContext().setEdgeLabelTransformer(new Transformer<MyEdge, String>() {
@@ -222,7 +228,7 @@ public class GamePanel extends javax.swing.JPanel
             if (e == mHoverEdge)
                 size += 2;
 
-            return new BasicStroke(size);
+            return new BasicStroke((int) (size * edgeScale));
         }
     }
 
@@ -242,6 +248,14 @@ public class GamePanel extends javax.swing.JPanel
             if (e.color == 2 && e.inCircle && !e.isFix)
                 return new Color(192, 255, 255);
             return Color.BLACK;
+        }
+    }
+
+    // misuse EdgeArrowStrokeTransformer interface for stroke of inner line
+    public class MyEdgeInnerStrokeTransformer implements Transformer<MyEdge, Stroke>
+    {
+        public Stroke transform(MyEdge e) {
+            return new BasicStroke((int) (2 * edgeScale));
         }
     }
 
@@ -302,7 +316,7 @@ public class GamePanel extends javax.swing.JPanel
         }
     }
 
-    class MyGraphMousePlugin extends AbstractGraphMousePlugin implements MouseListener, MouseMotionListener
+    class MyGraphMousePlugin extends AbstractGraphMousePlugin implements MouseListener, MouseMotionListener, MouseWheelListener
     {
         public MyGraphMousePlugin(int modifiers) {
             super(modifiers);
@@ -612,6 +626,25 @@ public class GamePanel extends javax.swing.JPanel
 
         public void mouseDragged(MouseEvent e) {
         }
+
+        public void mouseWheelMoved(MouseWheelEvent e) {
+
+            // act only when CTRL is pressed
+            if ((e.getModifiers() & MouseEvent.CTRL_MASK) == 0) {
+                return;
+            }
+
+            int notches = e.getWheelRotation();
+
+            if (notches < 0) { // mouse wheel moved UP
+                edgeScale *= 0.9;
+            }
+            else { // mouse wheel moved DOWN
+                edgeScale /= 0.9;
+            }
+
+            mVV.repaint();
+        }
     }
 
     void makeNewRandomGraph(int numVertex) {
@@ -619,13 +652,9 @@ public class GamePanel extends javax.swing.JPanel
     }
 
     void setNewGraph(MyGraph g) {
-        AlgBispanning ab = new AlgBispanning(g);
-        if (!ab.isOkay()) {
-            System.out.println("Graph is not bispanning!");
-            return;
-        }
 
         mGraph = g;
+        mGraph.graphChanged();
         mHoverEdge = null;
         mMarkedge = null;
         mHaveCycle = false;

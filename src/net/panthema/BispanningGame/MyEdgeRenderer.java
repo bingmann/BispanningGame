@@ -13,7 +13,6 @@
 
 package net.panthema.BispanningGame;
 
-import java.awt.BasicStroke;
 import java.awt.Dimension;
 import java.awt.Paint;
 import java.awt.Rectangle;
@@ -146,8 +145,9 @@ public class MyEdgeRenderer implements Renderer.Edge<Integer, MyEdge>
 
             Paint fill_paint = rc.getEdgeFillPaintTransformer().transform(e);
             if (fill_paint != null) {
+                // misuse getEdgeArrowStrokeTransformer() interface
                 Stroke old_stroke = g.getStroke();
-                g.setStroke(new BasicStroke(2));
+                g.setStroke(rc.getEdgeArrowStrokeTransformer().transform(e));
 
                 g.setPaint(fill_paint);
                 g.draw(edgeShape);

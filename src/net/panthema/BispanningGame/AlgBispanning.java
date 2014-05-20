@@ -28,8 +28,6 @@ import java.util.Queue;
 import java.util.Stack;
 import java.util.TreeMap;
 
-import edu.uci.ics.jung.graph.Graph;
-
 /**
  * Algorithm to construct two spanning trees in a bispanning graph.
  * 
@@ -45,7 +43,7 @@ public class AlgBispanning
     }
 
     /** The processed graph */
-    private Graph<Integer, MyEdge> mGraph;
+    private MyGraph mGraph;
 
     /** Number of edges in trees */
     private int mCount, mCount1, mCount2;
@@ -180,7 +178,7 @@ public class AlgBispanning
         return false;
     }
 
-    public AlgBispanning(Graph<Integer, MyEdge> aGraph) {
+    public AlgBispanning(MyGraph aGraph) {
         mGraph = aGraph;
 
         mCount = mGraph.getEdgeCount();
