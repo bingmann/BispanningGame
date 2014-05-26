@@ -184,12 +184,7 @@ public class AlgBispanning
         mCount = mGraph.getEdgeCount();
         mCount1 = mCount2 = 0;
 
-        int edgeMax = 0;
-
-        for (MyEdge e : mGraph.getEdges()) {
-            if (edgeMax < e.id)
-                edgeMax = e.id;
-        }
+        int edgeMax = mGraph.getMaxEdgeId();
 
         mUnion = new UnionFind(edgeMax + 1);
         mUnion1 = new UnionFind(edgeMax + 1);

@@ -313,10 +313,157 @@ class MyGraph extends SparseGraph<Integer, MyEdge>
             message = "";
             calcUniqueExchanges();
             System.out.println("Graph is bispanning!");
+
+            if (isAtomicBispanner()) {
+                message = "atomic";
+            }
+            else {
+                message = "composite";
+            }
         }
         else {
             message = "Graph is not bispanning!";
             System.out.println(message);
         }
+    }
+
+    /** Return maximum vertex id */
+    int getMaxVertexId() {
+        int vertexMax = 0;
+
+        for (Integer v : getVertices()) {
+            if (vertexMax < v)
+                vertexMax = v;
+        }
+        return vertexMax;
+    }
+
+    /** Return maximum edge.id */
+    int getMaxEdgeId() {
+        int edgeMax = 0;
+
+        for (MyEdge e : getEdges()) {
+            if (edgeMax < e.id)
+                edgeMax = e.id;
+        }
+        return edgeMax;
+    }
+
+    /** Increment binary number stored in the vector v */
+    static boolean increment_int_vector(int[] v) {
+        for (int i = 0; i < v.length; ++i) {
+            if (v[i] == -1)
+                continue;
+
+            if (v[i] == 0) {
+                v[i] = 1;
+                return true;
+            }
+            else {
+                v[i] = 0;
+            }
+        }
+        return false;
+    }
+
+    /** Tests if the graph is an atomic bispanner. */
+    boolean isAtomicBispanner() {
+
+        int maxEdge = getMaxEdgeId();
+
+        int[] subset = new int[maxEdge + 1];
+
+        // mark all existing edges as 0
+        for (int i = 0; i < subset.length; ++i)
+            subset[i] = -1;
+
+        for (MyEdge e : getEdges())
+            subset[e.id] = 0;
+
+        // iterate over all possible cut sets
+        while (increment_int_vector(subset)) {
+
+            // copy graph, excluding all edges in cut set
+            MyGraph g = new MyGraph();
+
+            for (Integer v : getVertices()) {
+                g.addVertex(v);
+            }
+
+            int cutsize = 0;
+
+            for (MyEdge e : getEdges()) {
+
+                if (subset[e.id] == -1)
+                    continue;
+
+                if (subset[e.id] != 0) {
+                    cutsize++;
+                    continue;
+                }
+
+                Integer x = getEndpoints(e).getFirst();
+                Integer y = getEndpoints(e).getSecond();
+
+                g.addEdge(e, x, y);
+            }
+
+            if (cutsize == getEdgeCount())
+                continue;
+
+            int comp = g.countComponents();
+
+            // System.out.println(Arrays.toString(subset) + " - " + (2 * (comp -
+            // 1)) + " - " + cutsize);
+
+            if (2 * (comp - 1) == cutsize)
+                return false;
+        }
+
+        return true;
+    }
+
+    /** Count the number of components in the graph */
+    int countComponents() {
+
+        // predecessor vertex in BFS tree
+        int[] pred = new int[getMaxVertexId() + 1];
+        for (int i = 0; i < pred.length; ++i)
+            pred[i] = i;
+
+        int numComponents = 0;
+
+        // BFS queue
+        ArrayDeque<Integer> queue = new ArrayDeque<Integer>();
+
+        // iterate over all vertices as roots
+        for (Integer r : getVertices()) {
+
+            if (pred[r] != r)
+                continue;
+
+            ++numComponents; // new root, new component
+
+            queue.addLast(r);
+
+            while (!queue.isEmpty()) {
+
+                Integer v = queue.pollFirst();
+
+                // visit all neighbors of v
+                for (MyEdge ev : getIncidentEdges(v)) {
+
+                    Integer w = getOpposite(v, ev);
+
+                    if (pred[w] != w || w == r) // already seen
+                        continue;
+
+                    queue.addLast(w);
+                    pred[w] = v;
+                }
+            }
+        }
+
+        return numComponents;
     }
 }
