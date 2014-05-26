@@ -184,11 +184,11 @@ public class AlgBispanning
         mCount = mGraph.getEdgeCount();
         mCount1 = mCount2 = 0;
 
-        int edgeMax = mGraph.getMaxEdgeId();
+        int vertexMax = mGraph.getMaxVertexId();
 
-        mUnion = new UnionFind(edgeMax + 1);
-        mUnion1 = new UnionFind(edgeMax + 1);
-        mUnion2 = new UnionFind(edgeMax + 1);
+        mUnion = new UnionFind(vertexMax + 1);
+        mUnion1 = new UnionFind(vertexMax + 1);
+        mUnion2 = new UnionFind(vertexMax + 1);
 
         mPred1 = new TreeMap<Integer, Integer>();
         mPred2 = new TreeMap<Integer, Integer>();
