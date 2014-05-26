@@ -92,12 +92,4 @@ public class UnionFind
             array[root_b] = root_a;
         }
     }
-
-    public void union(Integer a, Integer b) {
-        union(a.intValue(), b.intValue());
-    }
-
-    public int find(Integer x) {
-        return find(x.intValue());
-    }
 }
