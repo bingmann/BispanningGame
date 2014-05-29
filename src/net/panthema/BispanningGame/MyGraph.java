@@ -100,6 +100,9 @@ class MyGraph extends SparseGraph<Integer, MyEdge>
             // generate a random graph with numVertex vertexes
             MyGraph g = new MyGraph();
 
+            if (numVertex == 0)
+                return g;
+
             for (int i = 0; i < numVertex; ++i)
                 g.addVertex(i);
 
@@ -250,7 +253,7 @@ class MyGraph extends SparseGraph<Integer, MyEdge>
     /** Test if the edge e0 leads to a unique exchange */
     boolean testUniqueExchange(MyEdge e0) {
         if (markCycle(e0))
-            throw new RuntimeException("Bad!");
+            return false; // Bad throw new RuntimeException("Bad!");
 
         e0.flipColor();
         if (!markCycle(e0))

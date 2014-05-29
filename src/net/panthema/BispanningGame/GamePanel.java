@@ -376,11 +376,11 @@ public class GamePanel extends javax.swing.JPanel
 
         public void showPopup(MouseEvent e) {
             JMenu newGraph = new JMenu("New Random Graph");
-            newGraph.add(new AbstractAction("1 Vertex") {
+            newGraph.add(new AbstractAction("Empty Graph") {
                 private static final long serialVersionUID = 571719411573657773L;
 
                 public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(1);
+                    makeNewRandomGraph(0);
                 }
             });
             newGraph.add(new AbstractAction("4 Vertices") {
