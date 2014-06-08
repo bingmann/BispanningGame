@@ -317,11 +317,13 @@ class MyGraph extends SparseGraph<Integer, MyEdge>
             calcUniqueExchanges();
             System.out.println("Graph is bispanning!");
 
-            if (isAtomicBispanner()) {
-                message = "atomic";
-            }
-            else {
-                message = "composite";
+            if (getVertexCount() <= 10) {
+                if (isAtomicBispanner()) {
+                    message = "atomic";
+                }
+                else {
+                    message = "composite";
+                }
             }
         }
         else {
@@ -416,8 +418,7 @@ class MyGraph extends SparseGraph<Integer, MyEdge>
 
             int comp = g.countComponents();
 
-            // System.out.println(Arrays.toString(subset) + " - " + (2 * (comp -
-            // 1)) + " - " + cutsize);
+            //System.out.println(Arrays.toString(subset) + " - " + (2 * (comp - 1)) + " - " + cutsize);
 
             if (2 * (comp - 1) == cutsize)
                 return false;
