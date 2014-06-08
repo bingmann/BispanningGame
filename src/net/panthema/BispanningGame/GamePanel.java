@@ -39,9 +39,13 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Point2D;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
@@ -63,8 +67,10 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
 import edu.uci.ics.jung.algorithms.layout.FRLayout;
-import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.RadiusGraphElementAccessor;
+import edu.uci.ics.jung.algorithms.layout.StaticLayout;
+import edu.uci.ics.jung.io.GraphIOException;
+import edu.uci.ics.jung.io.GraphMLWriter;
 import edu.uci.ics.jung.visualization.Layer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbstractGraphMousePlugin;
@@ -95,7 +101,7 @@ public class GamePanel extends javax.swing.JPanel
     protected final static double mPickDistance = 32;
 
     /** Jung2 layouting object */
-    protected Layout<Integer, MyEdge> mLayout;
+    protected AbstractLayout<Integer, MyEdge> mLayout;
 
     /** Vertex Counter **/
     protected int mNextVertex;
@@ -592,6 +598,32 @@ public class GamePanel extends javax.swing.JPanel
                 }
             });
 
+            popup.add(new AbstractAction("Read GraphML") {
+                private static final long serialVersionUID = 571719411573657794L;
+
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        readGraphML();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    } catch (GraphIOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            });
+
+            popup.add(new AbstractAction("Write GraphML") {
+                private static final long serialVersionUID = 571719411573657795L;
+
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        writeGraphML();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            });
+
             mClickPoint = e.getPoint();
             popup.show(mVV, e.getX(), e.getY());
         }
@@ -712,5 +744,57 @@ public class GamePanel extends javax.swing.JPanel
         // Put mVV pack onto visible plane
         setLayout(new BorderLayout());
         add(mVV, BorderLayout.CENTER);
+    }
+
+    public void writeGraphML() throws IOException {
+
+        // Query user for filename
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Specify GraphML file to save");
+        chooser.setCurrentDirectory(new File("."));
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("GraphML File", "graphml");
+        chooser.setFileFilter(filter);
+
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+            return;
+
+        File outfile = chooser.getSelectedFile();
+        if (!outfile.getAbsolutePath().endsWith(".graphml")) {
+            outfile = new File(outfile.getAbsolutePath() + ".graphml");
+        }
+
+        // construct graphml writer
+        GraphMLWriter<Integer, MyEdge> graphWriter = new GraphMLWriter<Integer, MyEdge>();
+
+        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(outfile)));
+
+        graphWriter.addVertexData("x", null, "0", new Transformer<Integer, String>() {
+            public String transform(Integer v) {
+                return Double.toString(mLayout.getX(v));
+            }
+        });
+
+        graphWriter.addVertexData("y", null, "0", new Transformer<Integer, String>() {
+            public String transform(Integer v) {
+                return Double.toString(mLayout.getY(v));
+            }
+        });
+
+        graphWriter.addEdgeData("color", null, "0", new Transformer<MyEdge, String>() {
+            public String transform(MyEdge e) {
+                return Integer.toString(e.color);
+            }
+        });
+
+        graphWriter.save(mGraph, out);
+    }
+
+    public void readGraphML() throws IOException, GraphIOException {
+
+        MyGraphMLReader gml = new MyGraphMLReader(this);
+        setNewGraph(gml.newGraph);
+
+        mLayout = new StaticLayout<Integer, MyEdge>(mGraph, gml);
+        mVV.setGraphLayout(mLayout);
     }
 }
