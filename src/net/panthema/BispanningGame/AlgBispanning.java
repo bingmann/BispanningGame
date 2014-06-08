@@ -46,18 +46,18 @@ public class AlgBispanning
     private MyGraph mGraph;
 
     /** Number of edges in trees */
-    private int mCount, mCount1, mCount2;
+    private int mCount0, mCount1, mCount2;
 
     /** Three union-find data structures */
-    private UnionFind mUnion, mUnion1, mUnion2;
+    private UnionFind mUnion1, mUnion2;
 
     /** Predecessor vertex in BFS tree of both colors */
-    private Map<Integer, Integer> mPred1, mPred2;
+    private Map<Integer, MyEdge> mPred1, mPred2;
 
     /** Calculate BFS tree from root with given color */
     private void bfs_tree(int color, Integer root) {
 
-        Map<Integer, Integer> pred = (color == 1) ? mPred1 : mPred2;
+        Map<Integer, MyEdge> pred = (color == 1) ? mPred1 : mPred2;
         pred.clear();
 
         // BFS queue
@@ -65,7 +65,7 @@ public class AlgBispanning
 
         // Initialize queue with node root
         queue.add(root);
-        pred.put(root, root);
+        pred.put(root, new MyEdge(0));
 
         // Breadth first search
         while (!queue.isEmpty()) {
@@ -82,12 +82,12 @@ public class AlgBispanning
                     continue;
 
                 queue.add(w);
-                pred.put(w, v);
+                pred.put(w, ei);
             }
         }
     }
 
-    private boolean bfs_augmenting_path(MyEdge e0, int firstcolor) {
+    private boolean bfs_augmenting_path(MyEdge e0) {
 
         // BFS queue for edges
         Queue<MyEdge> queue = new ArrayDeque<MyEdge>();
@@ -96,7 +96,6 @@ public class AlgBispanning
         queue.add(e0);
 
         Integer e0_x = mGraph.getEndpoints(e0).getFirst();
-        Integer e0_y = mGraph.getEndpoints(e0).getSecond();
 
         // erase labels
         Map<MyEdge, MyEdge> label = new TreeMap<MyEdge, MyEdge>();
@@ -105,10 +104,8 @@ public class AlgBispanning
             MyEdge e = queue.poll();
 
             int ti = (e.color % 2) + 1; // other tree
-            if (e == e0)
-                ti = firstcolor;
 
-            Map<Integer, Integer> pred = (ti == 1) ? mPred1 : mPred2;
+            Map<Integer, MyEdge> pred = (ti == 1) ? mPred1 : mPred2;
             UnionFind myunion = (ti == 1) ? mUnion1 : mUnion2;
 
             Integer e_v = mGraph.getEndpoints(e).getFirst();
@@ -139,16 +136,16 @@ public class AlgBispanning
                 e.color = ti;
                 debug("colored final " + e + " with " + e.color);
 
-                mCount--;
+                mCount0--;
                 return true;
             }
 
             // pick the vertex u which is not the BFS root, and walk upwards to
             // find a part of the cycle
             Integer e_u;
-            if (e_v != e0_x && label.get(mGraph.findEdge(e_v, pred.get(e_v))) == null)
+            if (e_v != e0_x && label.get(pred.get(e_v)) == null)
                 e_u = e_v;
-            else if (e_w != e0_x && label.get(mGraph.findEdge(e_w, pred.get(e_w))) == null)
+            else if (e_w != e0_x && label.get(pred.get(e_w)) == null)
                 e_u = e_w;
             else {
                 debug("Both ends of edge already in label tree.");
@@ -157,13 +154,13 @@ public class AlgBispanning
 
             Stack<MyEdge> predpath = new Stack<MyEdge>();
 
-            while (e_u != e0_x && label.get(mGraph.findEdge(e_u, pred.get(e_u))) == null) {
-                MyEdge en = mGraph.findEdge(e_u, pred.get(e_u));
+            while (e_u != e0_x && label.get(pred.get(e_u)) == null) {
+                MyEdge en = pred.get(e_u);
 
                 debug("push (e_u,pred[e_u]) = (" + e_u + "," + pred.get(e_u) + ") = " + en + " onto stack.");
                 predpath.add(en);
 
-                e_u = pred.get(e_u);
+                e_u = mGraph.getOpposite(e_u, pred.get(e_u));
             }
 
             while (!predpath.empty()) {
@@ -173,57 +170,65 @@ public class AlgBispanning
             }
         }
 
-        mUnion.union(e0_x, e0_y);
-
         return false;
     }
 
     public AlgBispanning(MyGraph aGraph) {
         mGraph = aGraph;
 
-        mCount = mGraph.getEdgeCount();
-        mCount1 = mCount2 = 0;
+        mCount0 = mCount1 = mCount2 = 0;
 
         int vertexMax = mGraph.getMaxVertexId();
 
-        mUnion = new UnionFind(vertexMax + 1);
         mUnion1 = new UnionFind(vertexMax + 1);
         mUnion2 = new UnionFind(vertexMax + 1);
 
-        mPred1 = new TreeMap<Integer, Integer>();
-        mPred2 = new TreeMap<Integer, Integer>();
+        mPred1 = new TreeMap<Integer, MyEdge>();
+        mPred2 = new TreeMap<Integer, MyEdge>();
 
-        for (MyEdge e : mGraph.getEdges())
-            e.color = 0;
+        // iterate over edge and try to keep preinitialized colors
+        for (MyEdge e0 : mGraph.getEdges()) {
+            Integer e0_x = mGraph.getEndpoints(e0).getFirst();
+            Integer e0_y = mGraph.getEndpoints(e0).getSecond();
+
+            if (e0.color == 1 && mUnion1.find(e0_x) != mUnion1.find(e0_y)) {
+                mUnion1.union(e0_x, e0_y);
+                mCount1++;
+            }
+            else if (e0.color == 2 && mUnion2.find(e0_x) != mUnion2.find(e0_y)) {
+                mUnion2.union(e0_x, e0_y);
+                mCount2++;
+            }
+            else {
+                e0.color = 0;
+                mCount0++;
+            }
+        }
 
         // iterate over all edges and try to put them into a tree.
         for (MyEdge e0 : mGraph.getEdges()) {
             Integer e0_x = mGraph.getEndpoints(e0).getFirst();
             Integer e0_y = mGraph.getEndpoints(e0).getSecond();
 
-            if (e0.color != 0)
-                continue;
-
-            if (mUnion.find(e0_x) == mUnion.find(e0_y)) {
-                debug("Edge is in a clump");
+            if (e0.color != 0) {
+                debug("Edge already added to a tree");
             }
             // check two simple cases
-            else if (mCount1 != mGraph.getVertexCount() - 1 && mUnion1.find(e0_x) != mUnion1.find(e0_y)) {
+            else if (mUnion1.find(e0_x) != mUnion1.find(e0_y)) {
                 debug("Edge added directly to tree 1");
 
                 e0.color = 1;
                 mUnion1.union(e0_x, e0_y);
                 mCount1++;
-                mCount--;
+                mCount0--;
             }
-            // check two simple cases
-            else if (mCount2 != mGraph.getVertexCount() - 1 && mUnion2.find(e0_x) != mUnion2.find(e0_y)) {
+            else if (mUnion2.find(e0_x) != mUnion2.find(e0_y)) {
                 debug("Edge added directly to tree 2");
 
                 e0.color = 2;
                 mUnion2.union(e0_x, e0_y);
                 mCount2++;
-                mCount--;
+                mCount0--;
             }
             // apply labeling algorithm
             else {
@@ -232,14 +237,9 @@ public class AlgBispanning
                 bfs_tree(1, e0_x);
                 bfs_tree(2, e0_x);
 
-                // augment unfinished tree.
-                if (mCount1 != mGraph.getVertexCount() - 1) {
-                    bfs_augmenting_path(e0, 1);
-                }
-                else {
-                    assert (mCount2 != mGraph.getVertexCount() - 1);
-                    bfs_augmenting_path(e0, 2);
-                }
+                // augment unfinished tree, or abort if no augmentation found.
+                if (!bfs_augmenting_path(e0))
+                    return;
             }
 
             int[] count = new int[3];
@@ -249,12 +249,9 @@ public class AlgBispanning
 
             debug("number of colored edges: " + count[0] + " / " + count[1] + " / " + count[2]);
 
-            assert (mCount == count[0]);
+            assert (mCount0 == count[0]);
             assert (mCount1 == count[1]);
             assert (mCount2 == count[2]);
-
-            if (mCount1 + mCount2 == mGraph.getEdgeCount())
-                break;
 
             if (mCount1 == mGraph.getVertexCount() - 1 && mCount2 == mGraph.getVertexCount() - 1)
                 break;
@@ -264,6 +261,7 @@ public class AlgBispanning
     public boolean isOkay() {
         if (mCount1 + mCount2 != mGraph.getEdgeCount())
             return false;
+
         return (mCount1 == mGraph.getVertexCount() - 1 && mCount2 == mGraph.getVertexCount() - 1);
     }
 }
