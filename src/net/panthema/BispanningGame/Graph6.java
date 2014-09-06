@@ -219,12 +219,22 @@ public class Graph6
         int n = g.getVertexCount();
         bw.put_number(n);
 
+        // create vertex mapping to ignore deleted vertices
+        int m = g.getMaxVertexId();
+        int[] vmap = new int[m];
+
+        {
+            int i = 0;
+            for (Integer v : g.getVertices())
+                vmap[i++] = v;
+        }
+
         for (int j = 1; j < n; ++j) {
             for (int i = 0; i < j; ++i) {
                 // detected parallel edges -> switch to sparse6 format
                 // if (count > 1) return write_sparse6(g);
 
-                bw.put_bit(g.findEdge(i, j) != null);
+                bw.put_bit(g.findEdge(vmap[i], vmap[j]) != null);
             }
         }
         bw.flush();
