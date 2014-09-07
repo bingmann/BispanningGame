@@ -116,7 +116,12 @@ class GraphString
             ba.write(c);
         }
         pr.unread(c);
-        return Integer.parseInt(ba.toString());
+        try {
+            return Integer.parseInt(ba.toString());
+        }
+        catch (NumberFormatException e) {
+            throw (new IOException("Error in Graph String: integer format error"));
+        }
     }
 
     public static MyGraph read_graph(String str) throws IOException {
