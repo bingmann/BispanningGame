@@ -46,6 +46,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
@@ -174,6 +175,14 @@ public class GamePanel extends javax.swing.JPanel
 
         setLayout(new BorderLayout());
         add(mVV, BorderLayout.CENTER);
+    }
+
+    static void showStackTrace(Exception e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter w = new PrintWriter(sw);
+        e.printStackTrace(w);
+        String st = sw.toString();
+        JOptionPane.showMessageDialog(null, "Exception: " + st);
     }
 
     static AbstractLayout<Integer, MyEdge> MyGraphLayoutFactory(MyGraph g) {
@@ -579,8 +588,8 @@ public class GamePanel extends javax.swing.JPanel
                 private static final long serialVersionUID = 571719411573657792L;
 
                 public void actionPerformed(ActionEvent e) {
-                    JTextArea text = new JTextArea("graph6: " + Graph6.write_graph6(mGraph));
-                    JOptionPane.showMessageDialog(null, text);
+                    JTextArea text = new JTextArea(Graph6.write_graph6(mGraph));
+                    JOptionPane.showMessageDialog(null, text, "graph6 Serialization", JOptionPane.INFORMATION_MESSAGE);
                 }
             });
 
@@ -590,9 +599,11 @@ public class GamePanel extends javax.swing.JPanel
                 public void actionPerformed(ActionEvent e) {
                     try {
                         writePdf();
-                    } catch (FileNotFoundException e1) {
-                        e1.printStackTrace();
-                    } catch (DocumentException de) {
+                    }
+                    catch (FileNotFoundException e1) {
+                        showStackTrace(e1);
+                    }
+                    catch (DocumentException de) {
                         System.err.println(de.getMessage());
                     }
                 }
@@ -604,10 +615,12 @@ public class GamePanel extends javax.swing.JPanel
                 public void actionPerformed(ActionEvent e) {
                     try {
                         readGraphML();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    } catch (GraphIOException e1) {
-                        e1.printStackTrace();
+                    }
+                    catch (IOException e1) {
+                        showStackTrace(e1);
+                    }
+                    catch (GraphIOException e1) {
+                        showStackTrace(e1);
                     }
                 }
             });
@@ -618,8 +631,9 @@ public class GamePanel extends javax.swing.JPanel
                 public void actionPerformed(ActionEvent e) {
                     try {
                         writeGraphML();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
+                    }
+                    catch (IOException e1) {
+                        showStackTrace(e1);
                     }
                 }
             });
