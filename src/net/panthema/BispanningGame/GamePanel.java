@@ -49,6 +49,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import javax.swing.AbstractAction;
+import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
@@ -538,6 +539,24 @@ public class GamePanel extends javax.swing.JPanel
                 }
             });
 
+            popup.add(new AbstractAction("Load GraphString") {
+                private static final long serialVersionUID = 8636579131902717983L;
+
+                public void actionPerformed(ActionEvent e) {
+                    String input = JOptionPane.showInputDialog(null, "Enter GraphString:", "");
+                    if (input == null)
+                        return;
+                    try {
+                        MyGraph g = GraphString.read_graph(input);
+                        setNewGraph(g);
+                    }
+                    catch (IOException e1) {
+                        JOptionPane.showMessageDialog(null, "Error in GraphString: " + e1, "GraphString", JOptionPane.INFORMATION_MESSAGE);
+
+                    }
+                }
+            });
+
             popup.add(new AbstractAction("Load graph6/sparse6") {
                 private static final long serialVersionUID = 571719411573657792L;
 
@@ -581,6 +600,17 @@ public class GamePanel extends javax.swing.JPanel
                     mGraph.removeEdge(edge);
                     mGraph.graphChanged();
                     mVV.repaint();
+                }
+            });
+
+            popup.add(new AbstractAction("Print GraphString") {
+                private static final long serialVersionUID = 545719411573657792L;
+
+                public void actionPerformed(ActionEvent e) {
+                    JEditorPane text = new JEditorPane("text/plain", GraphString.write_graph(mGraph, mLayout));
+                    text.setEditable(false);
+                    text.setPreferredSize(new Dimension(300, 125));
+                    JOptionPane.showMessageDialog(null, text, "GraphString Serialization", JOptionPane.INFORMATION_MESSAGE);
                 }
             });
 
@@ -710,7 +740,12 @@ public class GamePanel extends javax.swing.JPanel
         mGraph.updateOriginalColor();
 
         if (mVV != null) {
-            mLayout = MyGraphLayoutFactory(mGraph);
+
+            if (g.mInitialLayout != null)
+                mLayout = g.mInitialLayout;
+            else
+                mLayout = MyGraphLayoutFactory(mGraph);
+
             mVV.setGraphLayout(mLayout);
         }
     }

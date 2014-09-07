@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.TreeMap;
 
+import edu.uci.ics.jung.algorithms.layout.StaticLayout;
 import edu.uci.ics.jung.graph.SparseGraph;
 
 /**
@@ -93,6 +94,9 @@ class MyGraph extends SparseGraph<Integer, MyEdge>
 
     /** Message to post render onto graph */
     public String message;
+
+    /** Initial layout (loaded from GraphString) */
+    public StaticLayout<Integer, MyEdge> mInitialLayout;
 
     /** Generate a simple random bispanning graph with numVertex nodes */
     static MyGraph getRandomGraph(int numVertex) {
