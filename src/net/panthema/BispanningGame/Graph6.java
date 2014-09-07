@@ -221,7 +221,7 @@ public class Graph6
 
         // create vertex mapping to ignore deleted vertices
         int m = g.getMaxVertexId();
-        int[] vmap = new int[m];
+        int[] vmap = new int[m + 1];
 
         {
             int i = 0;
