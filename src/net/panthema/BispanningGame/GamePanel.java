@@ -224,7 +224,10 @@ public class GamePanel extends javax.swing.JPanel
     public class MyVertexFactory implements org.apache.commons.collections15.Factory<Integer>
     {
         public Integer create() {
-            return mGraph.getVertexCount();
+            int i = 0;
+            while (mGraph.containsVertex(i))
+                ++i;
+            return i;
         }
     }
 
