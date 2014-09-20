@@ -292,7 +292,17 @@ public class GamePanel extends javax.swing.JPanel
     public class MyEdgeFactory implements org.apache.commons.collections15.Factory<MyEdge>
     {
         public MyEdge create() {
-            return new MyEdge(mGraph.getEdgeCount());
+            for (int i = 0;; ++i) {
+                boolean contains = false;
+                for (MyEdge e : mGraph.getEdges()) {
+                    if (e.id == i) {
+                        contains = true;
+                        break;
+                    }
+                }
+                if (!contains)
+                    return new MyEdge(i);
+            }
         }
     }
 
