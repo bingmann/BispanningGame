@@ -247,7 +247,7 @@ public class GamePanel extends javax.swing.JPanel
             if (e == mHoverEdge)
                 size += 2;
 
-            return new BasicStroke((int) (size * edgeScale));
+            return new BasicStroke((int) (size * edgeScale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
         }
     }
 
