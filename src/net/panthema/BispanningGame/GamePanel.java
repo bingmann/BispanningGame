@@ -120,6 +120,9 @@ public class GamePanel extends javax.swing.JPanel
     /** Scale the edge stroke thickness using mouse wheel */
     double edgeScale = 1.0;
 
+    /** Generate only random atomic bispannings graphs */
+    protected boolean generateOnlyAtomic = false;
+
     public GamePanel() {
 
         setBackground(Color.WHITE);
@@ -532,6 +535,14 @@ public class GamePanel extends javax.swing.JPanel
                 }
             });
 
+            newGraph.add(new AbstractAction(generateOnlyAtomic ? "Generate Composite or Atomic" : "Generate Only Atomic") {
+                private static final long serialVersionUID = 571719711573657790L;
+
+                public void actionPerformed(ActionEvent e) {
+                    generateOnlyAtomic = !generateOnlyAtomic;
+                }
+            });
+
             JPopupMenu popup = new JPopupMenu();
 
             popup.add(new AbstractAction("Relayout Graph") {
@@ -737,7 +748,11 @@ public class GamePanel extends javax.swing.JPanel
     }
 
     void makeNewRandomGraph(int numVertex) {
-        setNewGraph(MyGraph.getRandomGraph(numVertex));
+        MyGraph g;
+        do {
+            g = MyGraph.getRandomGraph(numVertex);
+        } while (numVertex != 0 && generateOnlyAtomic && !g.isAtomicBispanner());
+        setNewGraph(g);
     }
 
     void setNewGraph(MyGraph g) {
