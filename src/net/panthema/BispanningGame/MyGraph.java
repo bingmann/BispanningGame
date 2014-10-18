@@ -321,7 +321,7 @@ class MyGraph extends SparseGraph<Integer, MyEdge>
             calcUniqueExchanges();
             System.out.println("Graph is bispanning!");
 
-            if (getVertexCount() <= 10) {
+            if (getVertexCount() <= 18) {
                 if (isAtomicBispanner()) {
                     message = "atomic";
                 }
@@ -375,8 +375,58 @@ class MyGraph extends SparseGraph<Integer, MyEdge>
         return false;
     }
 
-    /** Tests if the graph is an atomic bispanner. */
+    /** Tests if the graph is an atomic bispanner, after Nash-Williams'
+     * criterion */
     boolean isAtomicBispanner() {
+
+        final int maxVertex = getMaxVertexId();
+        final int numVertex = getVertexCount();
+
+        // make a mapping V -> {0,...,n-1}
+        final int[] vmap = new int[maxVertex + 1];
+
+        int k = 0;
+        for (Integer v : getVertices())
+            vmap[v] = k++;
+        assert (k == numVertex);
+
+        // iterate over all possible vertex set partitions
+        EnumerateSetPartitions en = new EnumerateSetPartitions(numVertex);
+
+        return en.enumerate(new SetPartitionFunctor() {
+            public boolean partition(final int[] setp) {
+                // calculate number of set partitions
+                int npart = 0;
+                for (int i = 0; i < setp.length; ++i) {
+                    if (npart < setp[i] + 1)
+                        npart = setp[i] + 1;
+                }
+
+                // skip trivial partitions
+                if (npart == 1 || npart == numVertex)
+                    return true;
+
+                // count number of edges crossing partition members
+                int cross = 0;
+
+                for (MyEdge e : getEdges()) {
+                    Integer v = getEndpoints(e).getFirst();
+                    Integer w = getEndpoints(e).getSecond();
+
+                    if (setp[vmap[v]] != setp[vmap[w]])
+                        ++cross;
+                }
+
+                if (cross == 2 * (npart - 1)) // composite
+                    return false;
+
+                return true;
+            }
+        });
+    }
+
+    /** Tests if the graph is an atomic bispanner. */
+    boolean isAtomicBispannerTutte() {
 
         int maxEdge = getMaxEdgeId();
 
@@ -422,7 +472,7 @@ class MyGraph extends SparseGraph<Integer, MyEdge>
 
             int comp = g.countComponents();
 
-            //System.out.println(Arrays.toString(subset) + " - " + (2 * (comp - 1)) + " - " + cutsize);
+            // System.out.println(Arrays.toString(subset) + " - " + (2 * (comp - 1)) + " - " + cutsize);
 
             if (2 * (comp - 1) == cutsize)
                 return false;
