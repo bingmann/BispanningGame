@@ -123,6 +123,9 @@ public class GamePanel extends javax.swing.JPanel
     /** Generate only random atomic bispannings graphs */
     protected boolean generateOnlyAtomic = false;
 
+    /** Allow freer non-unique edge exchanges */
+    protected boolean allowFreeExchange = false;
+
     public GamePanel() {
 
         setBackground(Color.WHITE);
@@ -247,7 +250,7 @@ public class GamePanel extends javax.swing.JPanel
             else
                 size = (e.isUE ? THICK : THIN);
 
-            if (e == mHoverEdge)
+            if (e == mHoverEdge && (e.isUE || allowFreeExchange))
                 size += 2;
 
             return new BasicStroke((int) (size * edgeScale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
@@ -379,10 +382,12 @@ public class GamePanel extends javax.swing.JPanel
             System.err.println("toggle " + edge);
 
             if (!mHaveCycle) {
-                edge.flipColor();
+                if (edge.isUE || allowFreeExchange) {
+                    edge.flipColor();
 
-                mMarkedge = edge;
-                mHaveCycle = mGraph.markCycleFixes(edge);
+                    mMarkedge = edge;
+                    mHaveCycle = mGraph.markCycleFixes(edge);
+                }
             }
             else {
                 if (!edge.inCircle) {
@@ -545,15 +550,6 @@ public class GamePanel extends javax.swing.JPanel
 
             JPopupMenu popup = new JPopupMenu();
 
-            popup.add(new AbstractAction("Relayout Graph") {
-                private static final long serialVersionUID = 571719411573657791L;
-
-                public void actionPerformed(ActionEvent e) {
-                    final AbstractLayout<Integer, MyEdge> layout = MyGraphLayoutFactory(mGraph);
-                    mVV.setGraphLayout(layout);
-                }
-            });
-
             popup.add(new AbstractAction("Update Original Colors") {
                 private static final long serialVersionUID = 571719411573657796L;
 
@@ -562,6 +558,15 @@ public class GamePanel extends javax.swing.JPanel
                     mVV.repaint();
                 }
             });
+
+            popup.add(new AbstractAction(allowFreeExchange ? "Restrict to Unique Exchanges" : "Allow Free Edge Exchanges") {
+                private static final long serialVersionUID = 571719411573657798L;
+
+                public void actionPerformed(ActionEvent e) {
+                    allowFreeExchange = !allowFreeExchange;
+                }
+            });
+
 
             popup.add(new AbstractAction("Load GraphString") {
                 private static final long serialVersionUID = 8636579131902717983L;
@@ -624,6 +629,15 @@ public class GamePanel extends javax.swing.JPanel
                     mGraph.removeEdge(edge);
                     mGraph.graphChanged();
                     mVV.repaint();
+                }
+            });
+
+            popup.add(new AbstractAction("Relayout Graph") {
+                private static final long serialVersionUID = 571719411573657791L;
+
+                public void actionPerformed(ActionEvent e) {
+                    final AbstractLayout<Integer, MyEdge> layout = MyGraphLayoutFactory(mGraph);
+                    mVV.setGraphLayout(layout);
                 }
             });
 
