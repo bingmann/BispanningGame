@@ -117,7 +117,7 @@ public class GamePanel extends javax.swing.JPanel
     protected boolean mHaveCycle = false;
 
     /** Scale the edge stroke thickness using mouse wheel */
-    double edgeScale = 1.0;
+    double edgeScale = 2.0;
 
     /** Generate only random atomic bispannings graphs */
     protected boolean generateOnlyAtomic = false;
@@ -240,7 +240,7 @@ public class GamePanel extends javax.swing.JPanel
 
     public class MyEdgeStrokeTransformer implements Transformer<MyEdge, Stroke>
     {
-        protected final int THIN = 4;
+        protected final int THIN = 3;
         protected final int THICK = 6;
 
         public Stroke transform(MyEdge e) {
@@ -567,7 +567,6 @@ public class GamePanel extends javax.swing.JPanel
                     allowFreeExchange = !allowFreeExchange;
                 }
             });
-
 
             popup.add(new AbstractAction("Load GraphString") {
                 private static final long serialVersionUID = 8636579131902717983L;
