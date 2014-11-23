@@ -33,7 +33,6 @@ import edu.uci.ics.jung.visualization.RenderContext;
 import edu.uci.ics.jung.visualization.renderers.BasicEdgeArrowRenderingSupport;
 import edu.uci.ics.jung.visualization.renderers.EdgeArrowRenderingSupport;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
-import edu.uci.ics.jung.visualization.transform.LensTransformer;
 import edu.uci.ics.jung.visualization.transform.MutableTransformer;
 import edu.uci.ics.jung.visualization.transform.shape.GraphicsDecorator;
 
@@ -82,8 +81,8 @@ public class MyEdgeRenderer implements Renderer.Edge<Integer, MyEdge>
 
         Point2D p1 = layout.transform(v1);
         Point2D p2 = layout.transform(v2);
-        p1 = rc.getMultiLayerTransformer().transform(Layer.LAYOUT, p1);
-        p2 = rc.getMultiLayerTransformer().transform(Layer.LAYOUT, p2);
+        p1 = rc.getMultiLayerTransformer().transform(Layer.VIEW, p1);
+        p2 = rc.getMultiLayerTransformer().transform(Layer.VIEW, p2);
         float x1 = (float) p1.getX();
         float y1 = (float) p1.getY();
         float x2 = (float) p2.getX();
@@ -93,7 +92,6 @@ public class MyEdgeRenderer implements Renderer.Edge<Integer, MyEdge>
         Shape s2 = rc.getVertexShapeTransformer().transform(v2);
         Shape edgeShape = rc.getEdgeShapeTransformer().transform(Context.<Graph<Integer, MyEdge>, MyEdge> getInstance(graph, e));
 
-        boolean edgeHit = true;
         Rectangle deviceRectangle = null;
         JComponent vv = rc.getScreenDevice();
         if (vv != null) {
@@ -125,13 +123,10 @@ public class MyEdgeRenderer implements Renderer.Edge<Integer, MyEdge>
 
         edgeShape = xform.createTransformedShape(edgeShape);
 
-        MutableTransformer vt = rc.getMultiLayerTransformer().getTransformer(Layer.VIEW);
-        if (vt instanceof LensTransformer) {
-            vt = ((LensTransformer) vt).getDelegate();
-        }
-        edgeHit = vt.transform(edgeShape).intersects(deviceRectangle);
+        MutableTransformer vt = rc.getMultiLayerTransformer().getTransformer(Layer.LAYOUT);
+        edgeShape = vt.transform(edgeShape);
 
-        if (edgeHit == true) {
+        if (edgeShape.intersects(deviceRectangle)) {
             Paint oldPaint = g.getPaint();
 
             // get Paints for filling and drawing

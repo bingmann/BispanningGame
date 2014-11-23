@@ -149,6 +149,7 @@ public class MyEditingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin im
                 if (vertex != null && startVertex != null && startVertex != vertex) {
                     Graph<V, E> graph = vv.getGraphLayout().getGraph();
                     graph.addEdge(edgeFactory.create(), startVertex, vertex, EdgeType.UNDIRECTED);
+                    vv.getRenderContext().getParallelEdgeIndexFunction().reset();
 
                     if (graph instanceof MyGraph)
                         ((MyGraph) graph).graphChanged();

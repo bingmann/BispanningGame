@@ -29,7 +29,7 @@ import java.util.Queue;
 import java.util.TreeMap;
 
 import edu.uci.ics.jung.algorithms.layout.StaticLayout;
-import edu.uci.ics.jung.graph.SparseGraph;
+import edu.uci.ics.jung.graph.SparseMultigraph;
 
 /**
  * Edge Data Content
@@ -88,7 +88,7 @@ class MyEdge implements Comparable<MyEdge>
  * 
  * @author Timo Bingmann
  */
-class MyGraph extends SparseGraph<Integer, MyEdge>
+class MyGraph extends SparseMultigraph<Integer, MyEdge>
 {
     private static final long serialVersionUID = -6036820402858303673L;
 
@@ -472,7 +472,8 @@ class MyGraph extends SparseGraph<Integer, MyEdge>
 
             int comp = g.countComponents();
 
-            // System.out.println(Arrays.toString(subset) + " - " + (2 * (comp - 1)) + " - " + cutsize);
+            // System.out.println(Arrays.toString(subset) + " - " + (2 * (comp -
+            // 1)) + " - " + cutsize);
 
             if (2 * (comp - 1) == cutsize)
                 return false;

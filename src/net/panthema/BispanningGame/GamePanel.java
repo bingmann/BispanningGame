@@ -69,7 +69,6 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
 import edu.uci.ics.jung.algorithms.layout.FRLayout;
-import edu.uci.ics.jung.algorithms.layout.RadiusGraphElementAccessor;
 import edu.uci.ics.jung.algorithms.layout.StaticLayout;
 import edu.uci.ics.jung.io.GraphIOException;
 import edu.uci.ics.jung.io.GraphMLWriter;
@@ -81,8 +80,8 @@ import edu.uci.ics.jung.visualization.control.PickingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.PluggableGraphMouse;
 import edu.uci.ics.jung.visualization.control.ScalingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.TranslatingGraphMousePlugin;
-import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import edu.uci.ics.jung.visualization.picking.ShapePickSupport;
 import edu.uci.ics.jung.visualization.renderers.DefaultEdgeLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.DefaultVertexLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
@@ -97,10 +96,10 @@ public class GamePanel extends javax.swing.JPanel
     protected VisualizationViewer<Integer, MyEdge> mVV;
 
     /** Jung2 object for getting nearest vertex or edge */
-    protected RadiusGraphElementAccessor<Integer, MyEdge> mPickSupport;
+    protected ShapePickSupport<Integer, MyEdge> mPickSupport;
 
     /** distance of picking support */
-    protected final static double mPickDistance = 32;
+    protected final static float mPickDistance = 32;
 
     /** Jung2 layouting object */
     protected AbstractLayout<Integer, MyEdge> mLayout;
@@ -160,7 +159,9 @@ public class GamePanel extends javax.swing.JPanel
         mVV.getRenderContext().setVertexFillPaintTransformer(new MyVertexFillPaintTransformer());
 
         mVV.getRenderContext().setEdgeStrokeTransformer(new MyEdgeStrokeTransformer());
-        mVV.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line<Integer, MyEdge>());
+        MyQuadCurve<Integer, MyEdge> quadcurve = new MyQuadCurve<Integer, MyEdge>();
+        mVV.getRenderContext().setEdgeShapeTransformer(quadcurve);
+        mVV.getRenderContext().setParallelEdgeIndexFunction(quadcurve);
 
         mVV.getRenderContext().setEdgeDrawPaintTransformer(new MyEdgeDrawPaintTransformer());
         mVV.getRenderContext().setEdgeFillPaintTransformer(new MyEdgeFillPaintTransformer());
@@ -175,7 +176,7 @@ public class GamePanel extends javax.swing.JPanel
         mVV.getRenderContext().setLabelOffset(6);
 
         // create pick support to select closest nodes and edges
-        mPickSupport = new RadiusGraphElementAccessor<Integer, MyEdge>();
+        mPickSupport = new ShapePickSupport<Integer, MyEdge>(mVV, mPickDistance);
 
         // add post renderer to show error messages in background
         mVV.addPostRenderPaintable(new MyGraphPostRenderer());
@@ -372,9 +373,9 @@ public class GamePanel extends javax.swing.JPanel
 
             Point2D p = e.getPoint();
 
-            p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.LAYOUT, p);
+            p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.VIEW, p);
 
-            final MyEdge edge = mPickSupport.getEdge(mVV.getGraphLayout(), p.getX(), p.getY(), mPickDistance);
+            final MyEdge edge = mPickSupport.getEdge(mVV.getGraphLayout(), p.getX(), p.getY());
 
             if (edge == null)
                 return;
@@ -604,13 +605,14 @@ public class GamePanel extends javax.swing.JPanel
                 private static final long serialVersionUID = 571719411573657791L;
 
                 public void actionPerformed(ActionEvent e) {
-                    Point2D p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.LAYOUT, mClickPoint);
+                    Point2D p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.VIEW, mClickPoint);
 
-                    Integer v = mPickSupport.getVertex(mVV.getGraphLayout(), p.getX(), p.getY(), mPickDistance);
+                    Integer v = mPickSupport.getVertex(mVV.getGraphLayout(), p.getX(), p.getY());
                     if (v == null)
                         return;
 
                     mGraph.removeVertex(v);
+                    mVV.getRenderContext().getParallelEdgeIndexFunction().reset();
                     mGraph.graphChanged();
                     mVV.repaint();
                 }
@@ -620,13 +622,14 @@ public class GamePanel extends javax.swing.JPanel
                 private static final long serialVersionUID = 571719411573657794L;
 
                 public void actionPerformed(ActionEvent e) {
-                    Point2D p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.LAYOUT, mClickPoint);
+                    Point2D p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.VIEW, mClickPoint);
 
-                    MyEdge edge = mPickSupport.getEdge(mVV.getGraphLayout(), p.getX(), p.getY(), mPickDistance);
+                    MyEdge edge = mPickSupport.getEdge(mVV.getGraphLayout(), p.getX(), p.getY());
                     if (edge == null)
                         return;
 
                     mGraph.removeEdge(edge);
+                    mVV.getRenderContext().getParallelEdgeIndexFunction().reset();
                     mGraph.graphChanged();
                     mVV.repaint();
                 }
@@ -717,9 +720,9 @@ public class GamePanel extends javax.swing.JPanel
         public void mouseMoved(MouseEvent e) {
             Point2D p = e.getPoint();
 
-            p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.LAYOUT, p);
+            p = mVV.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.VIEW, p);
 
-            MyEdge edge = mPickSupport.getEdge(mVV.getGraphLayout(), p.getX(), p.getY(), mPickDistance);
+            MyEdge edge = mPickSupport.getEdge(mVV.getGraphLayout(), p.getX(), p.getY());
 
             if (edge != mHoverEdge) {
                 mHoverEdge = edge;
