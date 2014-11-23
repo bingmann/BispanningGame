@@ -24,9 +24,13 @@
 package net.panthema.BispanningGame;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.TreeMap;
+import java.util.Set;
 
 import edu.uci.ics.jung.algorithms.layout.StaticLayout;
 import edu.uci.ics.jung.graph.SparseMultigraph;
@@ -127,7 +131,122 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
         }
     }
 
-    /** Test if e0 closes a cycle of the same color in the graph */
+    /** Calculate an edge path of the other color which closes a cycle with e0. */
+    List<MyEdge> calcCycle(MyEdge e0) {
+        Integer e0_x = getEndpoints(e0).getFirst();
+        Integer e0_y = getEndpoints(e0).getSecond();
+
+        Queue<Integer> queue = new ArrayDeque<Integer>();
+
+        // initialize queue with node e0_x
+        queue.add(e0_x);
+
+        // predecessor map to calculate path
+        Map<Integer, MyEdge> pred = new HashMap<Integer, MyEdge>();
+
+        // Breadth first search
+        while (!queue.isEmpty()) {
+            Integer v = queue.poll();
+
+            for (MyEdge ei : getIncidentEdges(v)) {
+                if (ei.color == e0.color) // skip edges with same color
+                    continue;
+
+                Integer w = getOpposite(v, ei);
+
+                if (pred.get(w) != null) // vertex already seen
+                    continue;
+
+                queue.add(w);
+                pred.put(w, ei);
+            }
+        }
+
+        if (pred.get(e0_y) == null) // BFS did not reach other end of e0
+            return null;
+
+        // follow predecessor links back to other end
+        List<MyEdge> path = new ArrayList<MyEdge>();
+
+        Integer v = e0_y;
+        while (v != e0_x) {
+            MyEdge p = pred.get(v);
+            path.add(p);
+            v = getOpposite(v, p);
+        }
+
+        return path;
+    }
+
+    /** Calculate the edge cut of e0 which has the other color. */
+    Set<MyEdge> calcCut(MyEdge e0) {
+        Integer e0_x = getEndpoints(e0).getFirst();
+        Integer e0_y = getEndpoints(e0).getSecond();
+
+        // map containing mark of side of the cut for each vertex
+        Map<Integer, Integer> mark = new HashMap<Integer, Integer>();
+
+        // initialize BFS queue with first end of e0
+        Queue<Integer> queue = new ArrayDeque<Integer>();
+        queue.add(e0_x);
+        mark.put(e0_x, 1);
+
+        // First breadth search on e0_x's side
+        while (!queue.isEmpty()) {
+            Integer v = queue.poll();
+
+            for (MyEdge ei : getIncidentEdges(v)) {
+                // skip edges with same color or equal to e0
+                if (ei.color != e0.color || ei == e0)
+                    continue;
+
+                Integer w = getOpposite(v, ei);
+
+                if (mark.containsKey(w)) // vertex already seen
+                    continue;
+
+                queue.add(w);
+                mark.put(w, 1);
+            }
+        }
+
+        // if other end was marked: there is a path from e0_x to e0_y -> no cut.
+        if (mark.containsKey(e0_y))
+            return null;
+
+        // initialize BFS queue with other end of e0
+        queue.add(e0_y);
+        mark.put(e0_y, 2);
+
+        Set<MyEdge> cut = new HashSet<MyEdge>();
+
+        // Second breadth search on e0_y's side
+        while (!queue.isEmpty()) {
+            Integer v = queue.poll();
+
+            for (MyEdge ei : getIncidentEdges(v)) {
+                Integer w = getOpposite(v, ei);
+
+                // skip edges with same color or equal to e0
+                if (ei.color != e0.color) {
+                    // check if cut edge
+                    if (mark.containsKey(w) && mark.get(w) == 1)
+                        cut.add(ei);
+                }
+                else { // other color
+                    if (!mark.containsKey(w)) {
+                        // vertex not seen
+                        queue.add(w);
+                        mark.put(w, 2);
+                    }
+                }
+            }
+        }
+
+        return cut;
+    }
+
+    /** Test if e0 is contained in a cycle of the same color in the graph */
     boolean testCycle(MyEdge e0) {
         Integer e0_x = getEndpoints(e0).getFirst();
         Integer e0_y = getEndpoints(e0).getSecond();
@@ -137,30 +256,29 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
         // initialize queue with node e0
         queue.add(e0_x);
 
-        Map<Integer, Integer> pred = new TreeMap<Integer, Integer>();
-        pred.put(e0_x, e0_x);
+        Set<Integer> seen = new HashSet<Integer>();
 
         // Breadth first search
         while (!queue.isEmpty()) {
             Integer v = queue.poll();
 
             for (MyEdge ei : getIncidentEdges(v)) {
-                if (ei.color != e0.color)
+                if (ei.color != e0.color) // skip other colors
                     continue;
-                if (ei == e0)
+                if (ei == e0) // skip the seed edge
                     continue;
 
                 Integer w = getOpposite(v, ei);
 
-                if (pred.get(w) != null) // vertex already seen
+                if (seen.contains(w)) // vertex already seen
                     continue;
 
                 queue.add(w);
-                pred.put(w, v);
+                seen.add(w);
             }
         }
 
-        return (pred.get(e0_y) != null);
+        return seen.contains(e0_y);
     }
 
     /**
@@ -179,8 +297,8 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
         // initialize queue with node e0
         queue.add(e0_x);
 
-        Map<Integer, Integer> pred = new TreeMap<Integer, Integer>();
-        pred.put(e0_x, e0_x);
+        Map<Integer, MyEdge> pred = new HashMap<Integer, MyEdge>();
+        pred.put(e0_x, e0);
 
         // Breadth first search
         while (!queue.isEmpty()) {
@@ -198,15 +316,15 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
                     continue;
 
                 queue.add(w);
-                pred.put(w, v);
+                pred.put(w, ei);
             }
         }
 
         if (pred.get(e0_y) != null) {
             // System.out.println("Found cycle");
             Integer y = e0_y;
-            while (pred.get(y) != y) {
-                MyEdge e = findEdge(y, pred.get(y));
+            while (pred.get(y) != e0) {
+                MyEdge e = pred.get(y);
                 assert (e != null);
                 e.inCircle = true;
                 y = getOpposite(y, e);
@@ -255,32 +373,30 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
     }
 
     /** Test if the edge e0 leads to a unique exchange */
+    @SuppressWarnings("unused")
     boolean testUniqueExchange(MyEdge e0) {
-        if (markCycle(e0))
+        if (testCycle(e0))
             return false; // Bad throw new RuntimeException("Bad!");
 
-        e0.flipColor();
-        if (!markCycle(e0))
-            return false; // Bad!
+        List<MyEdge> cycle = calcCycle(e0);
+        if (cycle == null)
+            throw new RuntimeException("UEtest: edge is in a cycle!");
 
-        int excount = 0;
-
-        for (MyEdge ei : getEdges()) {
-            if (!ei.inCircle)
-                continue;
-            if (ei == e0)
-                continue;
-
-            ei.flipColor();
-            if (!testCycle(ei)) {
-                excount++;
-            }
-            ei.flipColor();
+        Set<MyEdge> cut = calcCut(e0);
+        if (cut == null) {
+            throw new RuntimeException("UEtest: edge is connected with in a cycle!");
         }
 
-        e0.flipColor();
+        Set<MyEdge> intersection = new HashSet<MyEdge>(cycle);
+        intersection.retainAll(cut);
 
-        return (excount == 1);
+        if (false) {
+            System.out.println("cycle[" + e0 + "]: " + cycle);
+            System.out.println("cut  [" + e0 + "]: " + cut);
+            System.out.println("inter[" + e0 + "]: " + intersection);
+        }
+
+        return intersection.size() == 1;
     }
 
     /** Calculate edges of graph which lead to unique exchanges. */
@@ -375,8 +491,9 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
         return false;
     }
 
-    /** Tests if the graph is an atomic bispanner, after Nash-Williams'
-     * criterion */
+    /**
+     * Tests if the graph is an atomic bispanner, after Nash-Williams' criterion
+     */
     boolean isAtomicBispanner() {
 
         final int maxVertex = getMaxVertexId();
