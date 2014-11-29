@@ -432,7 +432,7 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
             calcUniqueExchanges();
             System.out.println("Graph is bispanning!");
 
-            if (getVertexCount() <= 18) {
+            if (getVertexCount() <= 14) {
                 if (isAtomicBispanner()) {
                     message = "atomic";
                 }
