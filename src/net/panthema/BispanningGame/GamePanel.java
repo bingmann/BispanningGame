@@ -117,7 +117,7 @@ public class GamePanel extends javax.swing.JPanel
     protected boolean mHaveCycle = false;
 
     /** Scale the edge stroke thickness using mouse wheel */
-    double edgeScale = 2.0;
+    float edgeScale = 2.0f;
 
     /** Generate only random atomic bispannings graphs */
     protected boolean generateOnlyAtomic = false;
@@ -244,35 +244,32 @@ public class GamePanel extends javax.swing.JPanel
         protected final int THICK = 6;
 
         public Stroke transform(MyEdge e) {
-            int size = 0;
 
-            if (e.inCircle)
-                size = (e.isFix ? THICK : THIN);
-            else
-                size = (e.isUE ? THICK : THIN);
+            int size = (e.inCycle || e.inCut || e.isUE) ? THICK : THIN;
 
             if (e == mHoverEdge && (e.isUE || allowFreeExchange))
                 size += 2;
 
-            return new BasicStroke((int) (size * edgeScale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+            float[] dash_cut = { size * edgeScale };
+
+            if (e.inCut)
+                return new BasicStroke((int) (size * edgeScale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0.0f, dash_cut, 0.0f);
+            else
+                return new BasicStroke((int) (size * edgeScale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
         }
     }
 
     public class MyEdgeDrawPaintTransformer implements Transformer<MyEdge, Paint>
     {
         public Paint transform(MyEdge e) {
-            if (e.color == 1 && !e.inCircle)
+            if (e.color == 1 && !e.inCycle)
                 return Color.RED;
-            if (e.color == 1 && e.inCircle && e.isFix)
-                return Color.ORANGE;
-            if (e.color == 1 && e.inCircle && !e.isFix)
-                return new Color(255, 240, 187);
-            if (e.color == 2 && !e.inCircle)
+            if (e.color == 1 && e.inCycle)
+                return new Color(255, 164, 0);
+            if (e.color == 2 && !e.inCycle)
                 return Color.BLUE;
-            if (e.color == 2 && e.inCircle && e.isFix)
-                return new Color(0, 192, 255);
-            if (e.color == 2 && e.inCircle && !e.isFix)
-                return new Color(192, 255, 255);
+            if (e.color == 2 && e.inCycle)
+                return new Color(0, 164, 255);
             return Color.BLACK;
         }
     }
@@ -391,7 +388,7 @@ public class GamePanel extends javax.swing.JPanel
                 }
             }
             else {
-                if (!edge.inCircle) {
+                if (!edge.inCycle) {
                     System.out.println("Edge not in Cycle! Ignoring");
                 }
                 else {

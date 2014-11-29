@@ -37,7 +37,7 @@ import edu.uci.ics.jung.graph.SparseMultigraph;
 
 /**
  * Edge Data Content
- * 
+ *
  * @author Timo Bingmann
  */
 class MyEdge implements Comparable<MyEdge>
@@ -55,7 +55,10 @@ class MyEdge implements Comparable<MyEdge>
     boolean isUE;
 
     /** if a cycle exists, then cycle edges are marked */
-    boolean inCircle;
+    boolean inCycle;
+
+    /** if a cut exists, then cut edges are marked */
+    boolean inCut;
 
     /** if a cycle exists, then cycle breaker edges are marked */
     boolean isFix;
@@ -89,7 +92,7 @@ class MyEdge implements Comparable<MyEdge>
 /**
  * Graph class with custom edge data and various other graph algorithms needed
  * for graph exchange calculations.
- * 
+ *
  * @author Timo Bingmann
  */
 class MyGraph extends SparseMultigraph<Integer, MyEdge>
@@ -131,8 +134,12 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
         }
     }
 
-    /** Calculate an edge path of the other color which closes a cycle with e0. */
-    List<MyEdge> calcCycle(MyEdge e0) {
+    /**
+     * Calculate an edge path from one edge of e0 to the other. If sameColor =
+     * false, then the a path (cycle minus e0) of the other color is calculated.
+     * If sameColor = true, then a true cycle of the color of e0 is calculated.
+     */
+    List<MyEdge> calcCycle(MyEdge e0, boolean sameColor) {
         Integer e0_x = getEndpoints(e0).getFirst();
         Integer e0_y = getEndpoints(e0).getSecond();
 
@@ -149,7 +156,11 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
             Integer v = queue.poll();
 
             for (MyEdge ei : getIncidentEdges(v)) {
-                if (ei.color == e0.color) // skip edges with same color
+                // skip edges with same color?
+                if (!sameColor && ei.color == e0.color)
+                    continue;
+                // skip edges with other color? or == e0
+                if (sameColor && (ei.color != e0.color || ei == e0))
                     continue;
 
                 Integer w = getOpposite(v, ei);
@@ -175,11 +186,14 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
             v = getOpposite(v, p);
         }
 
+        if (sameColor)
+            path.add(e0);
+
         return path;
     }
 
     /** Calculate the edge cut of e0 which has the other color. */
-    Set<MyEdge> calcCut(MyEdge e0) {
+    Set<MyEdge> calcCut(MyEdge e0, boolean sameColor) {
         Integer e0_x = getEndpoints(e0).getFirst();
         Integer e0_y = getEndpoints(e0).getSecond();
 
@@ -196,8 +210,11 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
             Integer v = queue.poll();
 
             for (MyEdge ei : getIncidentEdges(v)) {
-                // skip edges with same color or equal to e0
-                if (ei.color != e0.color || ei == e0)
+                // skip edges with e0's color?
+                if (sameColor && ei.color == e0.color)
+                    continue;
+                // skip edges with other color? or == e0
+                if (!sameColor && (ei.color != e0.color || ei == e0))
                     continue;
 
                 Integer w = getOpposite(v, ei);
@@ -227,8 +244,8 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
             for (MyEdge ei : getIncidentEdges(v)) {
                 Integer w = getOpposite(v, ei);
 
-                // skip edges with same color or equal to e0
-                if (ei.color != e0.color) {
+                // skip edges with e0's color or other color?
+                if (sameColor == (ei.color == e0.color)) {
                     // check if cut edge
                     if (mark.containsKey(w) && mark.get(w) == 1)
                         cut.add(ei);
@@ -287,54 +304,19 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
      */
     boolean markCycle(MyEdge e0) {
         for (MyEdge ei : getEdges())
-            ei.inCircle = false;
+            ei.inCycle = false;
 
-        Integer e0_x = getEndpoints(e0).getFirst();
-        Integer e0_y = getEndpoints(e0).getSecond();
+        // find cycle in graph with color of e0
+        List<MyEdge> cycle = calcCycle(e0, true);
 
-        Queue<Integer> queue = new ArrayDeque<Integer>();
-
-        // initialize queue with node e0
-        queue.add(e0_x);
-
-        Map<Integer, MyEdge> pred = new HashMap<Integer, MyEdge>();
-        pred.put(e0_x, e0);
-
-        // Breadth first search
-        while (!queue.isEmpty()) {
-            Integer v = queue.poll();
-
-            for (MyEdge ei : getIncidentEdges(v)) {
-                if (ei.color != e0.color)
-                    continue;
-                if (ei == e0)
-                    continue;
-
-                Integer w = getOpposite(v, ei);
-
-                if (pred.get(w) != null) // vertex already seen
-                    continue;
-
-                queue.add(w);
-                pred.put(w, ei);
-            }
-        }
-
-        if (pred.get(e0_y) != null) {
-            // System.out.println("Found cycle");
-            Integer y = e0_y;
-            while (pred.get(y) != e0) {
-                MyEdge e = pred.get(y);
-                assert (e != null);
-                e.inCircle = true;
-                y = getOpposite(y, e);
-            }
-            e0.inCircle = true;
-            return true;
-        }
-        else {
+        if (cycle == null)
             return false;
-        }
+
+        // mark cycle edges
+        for (MyEdge ei : cycle)
+            ei.inCycle = true;
+
+        return true;
     }
 
     /**
@@ -345,19 +327,31 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
         for (MyEdge ei : getEdges())
             ei.isFix = false;
 
-        if (!markCycle(e0))
+        // find cycle in graph with color of e0
+        List<MyEdge> cycle = calcCycle(e0, true);
+        // System.out.println("cycle[" + e0 + "]: " + cycle);
+
+        if (cycle == null)
             return false;
 
-        for (MyEdge ei : getEdges()) {
-            if (!ei.inCircle)
-                continue;
+        // mark cycle edges
+        for (MyEdge ei : cycle)
+            ei.inCycle = true;
 
-            ei.flipColor();
-            ei.isFix = !testCycle(ei);
-            ei.flipColor();
+        // find cut in graph with color of e0
+        Set<MyEdge> cut = calcCut(e0, true);
+        // System.out.println("cut  [" + e0 + "]: " + cut);
+
+        if (cut == null)
+            return false;
+
+        // mark cut edges and intersection
+        for (MyEdge ei : cut) {
+            ei.inCut = true;
+            ei.isFix = ei.inCycle;
         }
 
-        return markCycle(e0);
+        return true;
     }
 
     /** Return true if the vertex v is a leaf in the color tree */
@@ -378,14 +372,13 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
         if (testCycle(e0))
             return false; // Bad throw new RuntimeException("Bad!");
 
-        List<MyEdge> cycle = calcCycle(e0);
+        List<MyEdge> cycle = calcCycle(e0, false);
         if (cycle == null)
             throw new RuntimeException("UEtest: edge is in a cycle!");
 
-        Set<MyEdge> cut = calcCut(e0);
-        if (cut == null) {
-            throw new RuntimeException("UEtest: edge is connected with in a cycle!");
-        }
+        Set<MyEdge> cut = calcCut(e0, false);
+        if (cut == null)
+            throw new RuntimeException("UEtest: edge induces no cut!");
 
         Set<MyEdge> intersection = new HashSet<MyEdge>(cycle);
         intersection.retainAll(cut);
@@ -402,6 +395,7 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
     /** Calculate edges of graph which lead to unique exchanges. */
     @SuppressWarnings("unused")
     void calcUniqueExchanges() {
+
         for (MyEdge ei : getEdges()) {
             ei.isUE = testUniqueExchange(ei);
 
@@ -415,7 +409,8 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
         }
 
         for (MyEdge ei : getEdges()) {
-            ei.inCircle = false;
+            ei.inCycle = false;
+            ei.inCut = false;
             ei.isFix = false;
         }
     }
