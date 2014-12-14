@@ -644,7 +644,7 @@ public class GamePanel extends javax.swing.JPanel
                 private static final long serialVersionUID = 545719411573657792L;
 
                 public void actionPerformed(ActionEvent e) {
-                    JEditorPane text = new JEditorPane("text/plain", GraphString.write_graph(mGraph, mLayout));
+                    JEditorPane text = new JEditorPane("text/plain", GraphString.write_graph(mGraph, mVV.getModel().getGraphLayout()));
                     text.setEditable(false);
                     text.setPreferredSize(new Dimension(300, 125));
                     JOptionPane.showMessageDialog(null, text, "GraphString Serialization", JOptionPane.INFORMATION_MESSAGE);
