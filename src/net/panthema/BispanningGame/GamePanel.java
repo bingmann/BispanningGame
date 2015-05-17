@@ -30,10 +30,12 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.GridLayout;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -51,11 +53,14 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
+import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -98,6 +103,9 @@ public class GamePanel extends javax.swing.JPanel
     /** Jung2 visualization object */
     protected VisualizationViewer<Integer, MyEdge> mVV;
 
+    /** Text area for game log */
+    protected JTextArea logTextArea;
+
     /** Jung2 object for getting nearest vertex or edge */
     protected ShapePickSupport<Integer, MyEdge> mPickSupport;
 
@@ -113,7 +121,10 @@ public class GamePanel extends javax.swing.JPanel
     /** Edge over which the mouse hovers */
     protected MyEdge mHoverEdge;
 
-    /** Edge marked by user */
+    /** Number of turns played in game */
+    protected int mTurnNum = 0;
+
+    /** Edge marked by Alice */
     protected MyEdge mMarkedge = null;
 
     /** Flag whether to automatically play Bob's part */
@@ -133,7 +144,11 @@ public class GamePanel extends javax.swing.JPanel
 
     public GamePanel() {
 
+        makeActions();
+
         setBackground(Color.WHITE);
+
+        logTextArea = new JTextArea();
 
         makeNewRandomGraph(8);
         mLayout = MyGraphLayoutFactory(mGraph);
@@ -192,6 +207,40 @@ public class GamePanel extends javax.swing.JPanel
 
         setLayout(new BorderLayout());
         add(mVV, BorderLayout.CENTER);
+
+        JPanel panelSouth = new JPanel();
+        add(panelSouth, BorderLayout.SOUTH);
+        panelSouth.setLayout(new GridLayout(0, 2, 0, 0));
+
+        JPanel panelButtons = new JPanel();
+        panelSouth.add(panelButtons);
+        panelButtons.setLayout(new GridLayout(0, 1, 0, 0));
+
+        final JButton btnNewGraph = new JButton("New Graph");
+        btnNewGraph.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JPopupMenu popup = new JPopupMenu();
+
+                for (int i = 0; i < actionRandomGraph.length; ++i) {
+                    if (actionRandomGraph[i] != null)
+                        popup.add(actionRandomGraph[i]);
+                }
+                popup.addSeparator();
+                popup.add(getActionNewGraphType());
+
+                popup.show(btnNewGraph, e.getX(), e.getY());
+            }
+        });
+        panelButtons.add(btnNewGraph);
+
+        JButton btnNewButton_1 = new JButton("New button");
+        panelButtons.add(btnNewButton_1);
+
+        JScrollPane scrollPane = new JScrollPane(logTextArea);
+        panelSouth.add(scrollPane);
+
+        logTextArea.setEditable(false);
     }
 
     static void showStackTrace(Exception e) {
@@ -200,6 +249,16 @@ public class GamePanel extends javax.swing.JPanel
         e.printStackTrace(w);
         String st = sw.toString();
         JOptionPane.showMessageDialog(null, "Exception: " + st);
+    }
+
+    /**
+     * Append new line to game text log.
+     */
+    void putLog(String text) {
+        if (logTextArea.getDocument().getLength() != 0)
+            text = "\n" + text;
+        logTextArea.append(text);
+        logTextArea.setCaretPosition(logTextArea.getDocument().getLength());
     }
 
     static AbstractLayout<Integer, MyEdge> MyGraphLayoutFactory(MyGraph g) {
@@ -394,6 +453,7 @@ public class GamePanel extends javax.swing.JPanel
 
             if (!mHaveCycle) {
                 if (edge.isUE || allowFreeExchange) {
+                    putLog("Turn " + (++mTurnNum) + ": Alice flips edge " + edge.id + " " + edge.colorName(false) + " -> " + edge.colorName(true) + ".");
                     edge.flipColor();
 
                     mMarkedge = edge;
@@ -427,141 +487,6 @@ public class GamePanel extends javax.swing.JPanel
         }
 
         public void showPopup(MouseEvent e) {
-            JMenu newGraph = new JMenu("New Random Graph");
-            newGraph.add(new AbstractAction("Empty Graph") {
-                private static final long serialVersionUID = 571719411573657773L;
-
-                public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(0);
-                }
-            });
-            newGraph.add(new AbstractAction("4 Vertices") {
-                private static final long serialVersionUID = 571719411573657774L;
-
-                public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(4);
-                }
-            });
-            newGraph.add(new AbstractAction("5 Vertices") {
-                private static final long serialVersionUID = 571719411573657775L;
-
-                public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(5);
-                }
-            });
-            newGraph.add(new AbstractAction("6 Vertices") {
-                private static final long serialVersionUID = 571719411573657776L;
-
-                public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(6);
-                }
-            });
-            newGraph.add(new AbstractAction("7 Vertices") {
-                private static final long serialVersionUID = 571719411573657777L;
-
-                public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(7);
-                }
-            });
-            newGraph.add(new AbstractAction("8 Vertices") {
-                private static final long serialVersionUID = 571719411573657778L;
-
-                public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(8);
-                }
-            });
-            newGraph.add(new AbstractAction("9 Vertices") {
-                private static final long serialVersionUID = 571719411573657779L;
-
-                public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(9);
-                }
-            });
-            newGraph.add(new AbstractAction("10 Vertices") {
-                private static final long serialVersionUID = 571719411573657780L;
-
-                public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(10);
-                }
-            });
-            newGraph.add(new AbstractAction("11 Vertices") {
-                private static final long serialVersionUID = 571719411573657781L;
-
-                public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(11);
-                }
-            });
-            newGraph.add(new AbstractAction("12 Vertices") {
-                private static final long serialVersionUID = 571719411573657782L;
-
-                public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(12);
-                }
-            });
-            newGraph.add(new AbstractAction("13 Vertices") {
-                private static final long serialVersionUID = 571719411573657783L;
-
-                public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(13);
-                }
-            });
-            newGraph.add(new AbstractAction("14 Vertices") {
-                private static final long serialVersionUID = 571719411573657784L;
-
-                public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(14);
-                }
-            });
-            newGraph.add(new AbstractAction("15 Vertices") {
-                private static final long serialVersionUID = 571719411573657785L;
-
-                public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(15);
-                }
-            });
-            newGraph.add(new AbstractAction("16 Vertices") {
-                private static final long serialVersionUID = 571719411573657786L;
-
-                public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(16);
-                }
-            });
-            newGraph.add(new AbstractAction("17 Vertices") {
-                private static final long serialVersionUID = 571719411573657787L;
-
-                public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(17);
-                }
-            });
-            newGraph.add(new AbstractAction("18 Vertices") {
-                private static final long serialVersionUID = 571719411573657788L;
-
-                public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(18);
-                }
-            });
-            newGraph.add(new AbstractAction("19 Vertices") {
-                private static final long serialVersionUID = 571719411573657789L;
-
-                public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(19);
-                }
-            });
-            newGraph.add(new AbstractAction("20 Vertices") {
-                private static final long serialVersionUID = 571719411573657790L;
-
-                public void actionPerformed(ActionEvent e) {
-                    makeNewRandomGraph(20);
-                }
-            });
-
-            newGraph.add(new AbstractAction(generateOnlyAtomic ? "Generate Composite or Atomic" : "Generate Only Atomic") {
-                private static final long serialVersionUID = 571719711573657790L;
-
-                public void actionPerformed(ActionEvent e) {
-                    generateOnlyAtomic = !generateOnlyAtomic;
-                }
-            });
 
             JPopupMenu popup = new JPopupMenu();
 
@@ -612,6 +537,13 @@ public class GamePanel extends javax.swing.JPanel
                 }
             });
 
+            JMenu newGraph = new JMenu("New Random Graph");
+            for (int i = 0; i < actionRandomGraph.length; ++i) {
+                if (actionRandomGraph[i] != null)
+                    newGraph.add(actionRandomGraph[i]);
+            }
+            newGraph.addSeparator();
+            newGraph.add(getActionNewGraphType());
             popup.add(newGraph);
 
             popup.add(new AbstractAction("Delete Vertex") {
@@ -777,7 +709,7 @@ public class GamePanel extends javax.swing.JPanel
         }
     }
 
-    Timer mPlayBob = new Timer(2000, new ActionListener() {
+    Timer mPlayBob = new Timer(1000, new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
             // markCycleFixes has set isFix for all fix edges.
@@ -800,6 +732,8 @@ public class GamePanel extends javax.swing.JPanel
 
             for (MyEdge eFix : fix1list) {
                 // flip edge
+                putLog("Turn " + (++mTurnNum) + ": Bob flips edge " + eFix.id + " " + eFix.colorName(false) + " -> " + eFix.colorName(true) + ".");
+
                 eFix.flipColor();
 
                 if (mGraph.markCycle(eFix)) {
@@ -822,6 +756,147 @@ public class GamePanel extends javax.swing.JPanel
         }
     });
 
+    AbstractAction[] actionRandomGraph = new AbstractAction[20 + 1];
+
+    void makeActions() {
+        actionRandomGraph[0] = new AbstractAction("Empty Graph") {
+            private static final long serialVersionUID = 571719411573657773L;
+
+            public void actionPerformed(ActionEvent e) {
+                makeNewRandomGraph(0);
+            }
+        };
+        actionRandomGraph[4] = new AbstractAction("4 Vertices") {
+            private static final long serialVersionUID = 571719411573657774L;
+
+            public void actionPerformed(ActionEvent e) {
+                makeNewRandomGraph(4);
+            }
+        };
+        actionRandomGraph[5] = new AbstractAction("5 Vertices") {
+            private static final long serialVersionUID = 571719411573657775L;
+
+            public void actionPerformed(ActionEvent e) {
+                makeNewRandomGraph(5);
+            }
+        };
+        actionRandomGraph[6] = new AbstractAction("6 Vertices") {
+            private static final long serialVersionUID = 571719411573657776L;
+
+            public void actionPerformed(ActionEvent e) {
+                makeNewRandomGraph(6);
+            }
+        };
+        actionRandomGraph[7] = new AbstractAction("7 Vertices") {
+            private static final long serialVersionUID = 571719411573657777L;
+
+            public void actionPerformed(ActionEvent e) {
+                makeNewRandomGraph(7);
+            }
+        };
+        actionRandomGraph[8] = new AbstractAction("8 Vertices") {
+            private static final long serialVersionUID = 571719411573657778L;
+
+            public void actionPerformed(ActionEvent e) {
+                makeNewRandomGraph(8);
+            }
+        };
+        actionRandomGraph[9] = new AbstractAction("9 Vertices") {
+            private static final long serialVersionUID = 571719411573657779L;
+
+            public void actionPerformed(ActionEvent e) {
+                makeNewRandomGraph(9);
+            }
+        };
+        actionRandomGraph[10] = new AbstractAction("10 Vertices") {
+            private static final long serialVersionUID = 571719411573657780L;
+
+            public void actionPerformed(ActionEvent e) {
+                makeNewRandomGraph(10);
+            }
+        };
+        actionRandomGraph[11] = new AbstractAction("11 Vertices") {
+            private static final long serialVersionUID = 571719411573657781L;
+
+            public void actionPerformed(ActionEvent e) {
+                makeNewRandomGraph(11);
+            }
+        };
+        actionRandomGraph[12] = new AbstractAction("12 Vertices") {
+            private static final long serialVersionUID = 571719411573657782L;
+
+            public void actionPerformed(ActionEvent e) {
+                makeNewRandomGraph(12);
+            }
+        };
+        actionRandomGraph[13] = new AbstractAction("13 Vertices") {
+            private static final long serialVersionUID = 571719411573657783L;
+
+            public void actionPerformed(ActionEvent e) {
+                makeNewRandomGraph(13);
+            }
+        };
+        actionRandomGraph[14] = new AbstractAction("14 Vertices") {
+            private static final long serialVersionUID = 571719411573657784L;
+
+            public void actionPerformed(ActionEvent e) {
+                makeNewRandomGraph(14);
+            }
+        };
+        actionRandomGraph[15] = new AbstractAction("15 Vertices") {
+            private static final long serialVersionUID = 571719411573657785L;
+
+            public void actionPerformed(ActionEvent e) {
+                makeNewRandomGraph(15);
+            }
+        };
+        actionRandomGraph[16] = new AbstractAction("16 Vertices") {
+            private static final long serialVersionUID = 571719411573657786L;
+
+            public void actionPerformed(ActionEvent e) {
+                makeNewRandomGraph(16);
+            }
+        };
+        actionRandomGraph[17] = new AbstractAction("17 Vertices") {
+            private static final long serialVersionUID = 571719411573657787L;
+
+            public void actionPerformed(ActionEvent e) {
+                makeNewRandomGraph(17);
+            }
+        };
+        actionRandomGraph[18] = new AbstractAction("18 Vertices") {
+            private static final long serialVersionUID = 571719411573657788L;
+
+            public void actionPerformed(ActionEvent e) {
+                makeNewRandomGraph(18);
+            }
+        };
+        actionRandomGraph[19] = new AbstractAction("19 Vertices") {
+            private static final long serialVersionUID = 571719411573657789L;
+
+            public void actionPerformed(ActionEvent e) {
+                makeNewRandomGraph(19);
+            }
+        };
+        actionRandomGraph[20] = new AbstractAction("20 Vertices") {
+            private static final long serialVersionUID = 571719411573657790L;
+
+            public void actionPerformed(ActionEvent e) {
+                makeNewRandomGraph(20);
+            }
+        };
+    }
+
+    AbstractAction getActionNewGraphType() {
+        return new AbstractAction(generateOnlyAtomic ? "Generate Compositenly or Atomic" : "Generate Only Atomic") {
+            private static final long serialVersionUID = 571719711573657790L;
+
+            public void actionPerformed(ActionEvent e) {
+                generateOnlyAtomic = !generateOnlyAtomic;
+            }
+        };
+    }
+
     void makeNewRandomGraph(int numVertex) {
         MyGraph g;
         do {
@@ -837,7 +912,10 @@ public class GamePanel extends javax.swing.JPanel
         mHoverEdge = null;
         mMarkedge = null;
         mHaveCycle = false;
+        mTurnNum = 0;
         mNextVertex = g.getVertexCount();
+
+        putLog("Starting new game with " + mGraph.getEdgeCount() + " edges.");
 
         mGraph.calcUniqueExchanges();
         mGraph.updateOriginalColor();

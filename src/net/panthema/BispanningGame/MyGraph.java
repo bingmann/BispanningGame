@@ -83,6 +83,16 @@ class MyEdge implements Comparable<MyEdge>
             color = 1;
     }
 
+    /** Return current color name. */
+    public String colorName(boolean flip) {
+        if (color == 1)
+            return !flip ? "blue" : "red";
+        else if (color == 2)
+            return !flip ? "red" : "blue";
+        else
+            return "black";
+    }
+
     /** Required to be Comparable */
     public int compareTo(MyEdge o) {
         return id - o.id;
