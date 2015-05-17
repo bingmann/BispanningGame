@@ -324,8 +324,11 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
      * and calculate which of the cycle edges break the cycle correctly.
      */
     boolean markCycleFixes(MyEdge e0) {
-        for (MyEdge ei : getEdges())
+        for (MyEdge ei : getEdges()) {
             ei.isFix = false;
+            ei.inCycle = false;
+            ei.inCut = false;
+        }
 
         // find cycle in graph with color of e0
         List<MyEdge> cycle = calcCycle(e0, true);

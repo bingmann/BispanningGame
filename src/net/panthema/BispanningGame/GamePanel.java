@@ -33,6 +33,7 @@ import java.awt.Graphics;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -47,6 +48,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
 import javax.swing.JEditorPane;
@@ -55,6 +57,7 @@ import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
+import javax.swing.Timer;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.commons.collections15.Transformer;
@@ -113,6 +116,9 @@ public class GamePanel extends javax.swing.JPanel
     /** Edge marked by user */
     protected MyEdge mMarkedge = null;
 
+    /** Flag whether to automatically play Bob's part */
+    protected boolean mAutoPlayBob = true;
+
     /** Flag if a cycle/cut exists in the graph */
     protected boolean mHaveCycle = false;
 
@@ -134,6 +140,9 @@ public class GamePanel extends javax.swing.JPanel
 
         mVV = new VisualizationViewer<Integer, MyEdge>(mLayout);
         mVV.setBackground(Color.WHITE);
+
+        // Bob's play does not repeat.
+        mPlayBob.setRepeats(false);
 
         // set up mouse handling
         PluggableGraphMouse gm = new PluggableGraphMouse();
@@ -359,6 +368,10 @@ public class GamePanel extends javax.swing.JPanel
 
         public void mouseClicked(MouseEvent e) {
 
+            // no mouse click when Bob is playing!
+            if (mHaveCycle && mAutoPlayBob)
+                return;
+
             if ((e.getModifiers() & MouseEvent.CTRL_MASK) != 0) {
                 return;
             }
@@ -385,6 +398,10 @@ public class GamePanel extends javax.swing.JPanel
 
                     mMarkedge = edge;
                     mHaveCycle = mGraph.markCycleFixes(edge);
+
+                    if (mAutoPlayBob) {
+                        mPlayBob.start();
+                    }
                 }
             }
             else {
@@ -759,6 +776,51 @@ public class GamePanel extends javax.swing.JPanel
             mVV.repaint();
         }
     }
+
+    Timer mPlayBob = new Timer(2000, new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // markCycleFixes has set isFix for all fix edges.
+            ArrayList<MyEdge> fix1list = new ArrayList<MyEdge>();
+            ArrayList<MyEdge> fix2list = new ArrayList<MyEdge>();
+            // Bob prefers to re-color already flipped edges: fix1list
+
+            for (MyEdge ei : mGraph.getEdges()) {
+                if (ei.isFix && ei != mMarkedge) {
+                    if (ei.color != ei.origColor) {
+                        fix1list.add(ei);
+                    }
+                    else {
+                        fix2list.add(ei);
+                    }
+                }
+            }
+
+            fix1list.addAll(fix2list);
+
+            for (MyEdge eFix : fix1list) {
+                // flip edge
+                eFix.flipColor();
+
+                if (mGraph.markCycle(eFix)) {
+                    System.out.println("Edge does not solve cycle! Ignoring");
+                    eFix.flipColor();
+                    mGraph.markCycle(mMarkedge);
+                }
+                else {
+                    mHaveCycle = false;
+                    mGraph.calcUniqueExchanges();
+                    break;
+                }
+            }
+
+            if (mHaveCycle) {
+                System.out.println("Bob could not fix the graph?");
+            }
+
+            repaint();
+        }
+    });
 
     void makeNewRandomGraph(int numVertex) {
         MyGraph g;
