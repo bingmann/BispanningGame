@@ -272,13 +272,13 @@ public class GamePanel extends javax.swing.JPanel
     {
         public Paint transform(MyEdge e) {
             if (e.color == 1 && !e.inCycle)
-                return Color.RED;
-            if (e.color == 1 && e.inCycle)
-                return new Color(255, 164, 0);
-            if (e.color == 2 && !e.inCycle)
                 return Color.BLUE;
-            if (e.color == 2 && e.inCycle)
+            if (e.color == 1 && e.inCycle)
                 return new Color(0, 164, 255);
+            if (e.color == 2 && !e.inCycle)
+                return Color.RED;
+            if (e.color == 2 && e.inCycle)
+                return new Color(255, 164, 0);
             return Color.BLACK;
         }
     }
@@ -295,9 +295,9 @@ public class GamePanel extends javax.swing.JPanel
     {
         public Paint transform(MyEdge e) {
             if (e.origColor == 1)
-                return Color.RED;
-            if (e.origColor == 2)
                 return Color.BLUE;
+            if (e.origColor == 2)
+                return Color.RED;
             return Color.BLACK;
         }
     }
