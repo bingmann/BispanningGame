@@ -22,6 +22,8 @@
 
 package net.panthema.BispanningGame;
 
+import java.io.IOException;
+
 import javax.swing.SwingUtilities;
 
 public class Applet extends javax.swing.JApplet
@@ -32,10 +34,16 @@ public class Applet extends javax.swing.JApplet
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {
-                    add(new GamePanel());
+                    try {
+                        add(new GamePanel());
+                    }
+                    catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }

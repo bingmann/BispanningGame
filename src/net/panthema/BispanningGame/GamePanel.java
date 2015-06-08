@@ -30,6 +30,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Paint;
 import java.awt.Stroke;
@@ -42,6 +43,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -52,6 +54,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
@@ -142,11 +145,17 @@ public class GamePanel extends javax.swing.JPanel
     /** Allow freer non-unique edge exchanges */
     protected boolean allowFreeExchange = false;
 
-    public GamePanel() {
+    /** Image of Alice and Bob */
+    BufferedImage ImageAlice, ImageBob;
+
+    public GamePanel() throws IOException {
 
         makeActions();
 
         setBackground(Color.WHITE);
+
+        ImageAlice = ImageIO.read(ClassLoader.getSystemResourceAsStream("net/panthema/BispanningGame/images/Alice.png"));
+        ImageBob = ImageIO.read(ClassLoader.getSystemResourceAsStream("net/panthema/BispanningGame/images/Bob.png"));
 
         logTextArea = new JTextArea();
 
@@ -201,6 +210,9 @@ public class GamePanel extends javax.swing.JPanel
 
         // create pick support to select closest nodes and edges
         mPickSupport = new ShapePickSupport<Integer, MyEdge>(mVV, mPickDistance);
+
+        // add pre renderer to draw Alice and Bob
+        mVV.addPreRenderPaintable(new MyGraphPreRenderer());
 
         // add post renderer to show error messages in background
         mVV.addPostRenderPaintable(new MyGraphPostRenderer());
@@ -375,6 +387,70 @@ public class GamePanel extends javax.swing.JPanel
                 if (!contains)
                     return new MyEdge(i);
             }
+        }
+    }
+
+    class MyGraphPreRenderer implements VisualizationViewer.Paintable
+    {
+        Font font;
+        FontMetrics metrics;
+        int swidthAlice, swidthBob, sheight;
+
+        Color highLight = new Color(192, 255, 192);
+        Color high = new Color(0, 192, 0);
+
+        public void paint(Graphics _g) {
+            Graphics2D g = (Graphics2D) _g;
+            if (font == null) {
+                font = new Font(g.getFont().getName(), Font.BOLD, 18);
+
+                metrics = g.getFontMetrics(font);
+                swidthAlice = metrics.stringWidth("Alice");
+                swidthBob = metrics.stringWidth("Bob");
+                sheight = metrics.getMaxAscent() + metrics.getMaxDescent();
+            }
+
+            Dimension d = mVV.getSize();
+
+            int AliceHeight = 100 * ImageAlice.getHeight() / ImageAlice.getWidth();
+            int BobHeight = 100 * ImageBob.getHeight() / ImageBob.getWidth();
+
+            g.setFont(font);
+            g.setStroke(new BasicStroke(2));
+
+            if (!mHaveCycle) {
+                g.setColor(highLight);
+                g.fillRoundRect(0, 0, 103, AliceHeight + sheight + 6, 20, 20);
+                g.setColor(high);
+                g.drawRoundRect(0, 0, 103, AliceHeight + sheight + 6, 20, 20);
+            }
+            else {
+                g.setColor(Color.BLACK);
+                g.drawRoundRect(0, 0, 103, AliceHeight + sheight + 6, 20, 20);
+            }
+
+            g.setColor(Color.BLACK);
+            g.drawImage(ImageAlice, 4, 6, 100, AliceHeight, 0, 0, ImageAlice.getWidth(), ImageAlice.getHeight(), null);
+            g.drawString("Alice", (100 - swidthAlice) / 2, AliceHeight + sheight - 3);
+
+            if (mHaveCycle) {
+                g.setColor(highLight);
+                g.fillRoundRect(d.width - 105, d.height - BobHeight - sheight - 8, 103, BobHeight + sheight + 6, 20, 20);
+                g.setColor(high);
+                g.drawRoundRect(d.width - 105, d.height - BobHeight - sheight - 8, 103, BobHeight + sheight + 6, 20, 20);
+            }
+            else {
+                g.setColor(Color.BLACK);
+                g.drawRoundRect(d.width - 105, d.height - BobHeight - sheight - 8, 103, BobHeight + sheight + 6, 20, 20);
+            }
+
+            g.setColor(Color.BLACK);
+            g.drawImage(ImageBob, d.width - 100, d.height - BobHeight - sheight - 2, d.width - 5, d.height - sheight - 4, 0, 0, ImageBob.getWidth(), ImageBob.getHeight(), null);
+            g.drawString("Bob", d.width - swidthBob - (100 - swidthBob) / 2, d.height - 8);
+        }
+
+        public boolean useTransform() {
+            return false;
         }
     }
 

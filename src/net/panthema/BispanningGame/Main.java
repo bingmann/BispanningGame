@@ -22,11 +22,13 @@
 
 package net.panthema.BispanningGame;
 
+import java.io.IOException;
+
 import javax.swing.JFrame;
 
 public class Main
 {
-    public static void main(String[] s) {
+    public static void main(String[] s) throws IOException {
         JFrame jf = new JFrame("Bispanning Graph Game");
         jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jf.getContentPane().add(new GamePanel());

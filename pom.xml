@@ -41,29 +41,39 @@
   <build>
     <sourceDirectory>${project.basedir}/src</sourceDirectory>
 
+    <resources>
+      <resource>
+        <directory>${project.basedir}/src</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </resource>
+    </resources>
+
     <plugins>
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-shade-plugin</artifactId>
-	<version>2.2</version>
-	<executions>
-	  <execution>
-	    <phase>package</phase>
-	    <goals>
-	      <goal>shade</goal>
-	    </goals>
-	    <configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.2</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <mainClass>net.panthema.BispanningGame.Main</mainClass>
                 </transformer>
               </transformers>
               <minimizeJar>true</minimizeJar>
-	    </configuration>
-	  </execution>
-	</executions>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
+
   </build>
 
 </project>
