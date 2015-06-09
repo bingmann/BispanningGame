@@ -246,8 +246,19 @@ public class GamePanel extends javax.swing.JPanel
         });
         panelButtons.add(btnNewGraph);
 
-        JButton btnNewButton_1 = new JButton("New button");
-        panelButtons.add(btnNewButton_1);
+        JButton btnOptions = new JButton("Options");
+        btnOptions.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JPopupMenu popup = new JPopupMenu();
+
+                addPopupActions(popup);
+                popup.addSeparator();
+
+                popup.show(btnNewGraph, e.getX(), e.getY());
+            }
+        });
+        panelButtons.add(btnOptions);
 
         JScrollPane scrollPane = new JScrollPane(logTextArea);
         panelSouth.add(scrollPane);
@@ -569,70 +580,6 @@ public class GamePanel extends javax.swing.JPanel
 
             JPopupMenu popup = new JPopupMenu();
 
-            popup.add(new AbstractAction("Update Original Colors") {
-                private static final long serialVersionUID = 571719411573657796L;
-
-                public void actionPerformed(ActionEvent e) {
-                    mGraph.updateOriginalColor();
-                    mVV.repaint();
-                }
-            });
-
-            popup.add(new AbstractAction(allowFreeExchange ? "Restrict to Unique Exchanges" : "Allow Free Edge Exchanges") {
-                private static final long serialVersionUID = 571719411573657798L;
-
-                public void actionPerformed(ActionEvent e) {
-                    allowFreeExchange = !allowFreeExchange;
-                }
-            });
-
-            popup.add(new AbstractAction((mAutoPlayBob ? "Disable" : "Enable") + " Autoplay of Bob's Moves") {
-                private static final long serialVersionUID = 571719413573657798L;
-
-                public void actionPerformed(ActionEvent e) {
-                    mAutoPlayBob = !mAutoPlayBob;
-                }
-            });
-
-            popup.add(new AbstractAction("Load GraphString") {
-                private static final long serialVersionUID = 8636579131902717983L;
-
-                public void actionPerformed(ActionEvent e) {
-                    String input = JOptionPane.showInputDialog(null, "Enter GraphString:", "");
-                    if (input == null)
-                        return;
-                    try {
-                        MyGraph g = GraphString.read_graph(input);
-                        setNewGraph(g);
-                    }
-                    catch (IOException e1) {
-                        JOptionPane.showMessageDialog(null, "Error in GraphString: " + e1, "GraphString", JOptionPane.INFORMATION_MESSAGE);
-
-                    }
-                }
-            });
-
-            popup.add(new AbstractAction("Load graph6/sparse6") {
-                private static final long serialVersionUID = 571719411573657792L;
-
-                public void actionPerformed(ActionEvent e) {
-                    String input = JOptionPane.showInputDialog(null, "Enter graph6/sparse6 string:", "");
-                    if (input == null)
-                        return;
-                    MyGraph g = Graph6.read_graph6(input);
-                    setNewGraph(g);
-                }
-            });
-
-            JMenu newGraph = new JMenu("New Random Graph");
-            for (int i = 0; i < actionRandomGraph.length; ++i) {
-                if (actionRandomGraph[i] != null)
-                    newGraph.add(actionRandomGraph[i]);
-            }
-            newGraph.addSeparator();
-            newGraph.add(getActionNewGraphType());
-            popup.add(newGraph);
-
             popup.add(new AbstractAction("Delete Vertex") {
                 private static final long serialVersionUID = 571719411573657791L;
 
@@ -667,79 +614,8 @@ public class GamePanel extends javax.swing.JPanel
                 }
             });
 
-            popup.add(new AbstractAction("Relayout Graph") {
-                private static final long serialVersionUID = 571719411573657791L;
-
-                public void actionPerformed(ActionEvent e) {
-                    final AbstractLayout<Integer, MyEdge> layout = MyGraphLayoutFactory(mGraph);
-                    mVV.setGraphLayout(layout);
-                }
-            });
-
-            popup.add(new AbstractAction("Print GraphString") {
-                private static final long serialVersionUID = 545719411573657792L;
-
-                public void actionPerformed(ActionEvent e) {
-                    JEditorPane text = new JEditorPane("text/plain", GraphString.write_graph(mGraph, mVV.getModel().getGraphLayout()));
-                    text.setEditable(false);
-                    text.setPreferredSize(new Dimension(300, 125));
-                    JOptionPane.showMessageDialog(null, text, "GraphString Serialization", JOptionPane.INFORMATION_MESSAGE);
-                }
-            });
-
-            popup.add(new AbstractAction("Print graph6") {
-                private static final long serialVersionUID = 571719411573657792L;
-
-                public void actionPerformed(ActionEvent e) {
-                    JTextArea text = new JTextArea(Graph6.write_graph6(mGraph));
-                    JOptionPane.showMessageDialog(null, text, "graph6 Serialization", JOptionPane.INFORMATION_MESSAGE);
-                }
-            });
-
-            popup.add(new AbstractAction("Write PDF") {
-                private static final long serialVersionUID = 571719411573657793L;
-
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        writePdf();
-                    }
-                    catch (FileNotFoundException e1) {
-                        showStackTrace(e1);
-                    }
-                    catch (DocumentException de) {
-                        System.err.println(de.getMessage());
-                    }
-                }
-            });
-
-            popup.add(new AbstractAction("Read GraphML") {
-                private static final long serialVersionUID = 571719411573657794L;
-
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        readGraphML();
-                    }
-                    catch (IOException e1) {
-                        showStackTrace(e1);
-                    }
-                    catch (GraphIOException e1) {
-                        showStackTrace(e1);
-                    }
-                }
-            });
-
-            popup.add(new AbstractAction("Write GraphML") {
-                private static final long serialVersionUID = 571719411573657795L;
-
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        writeGraphML();
-                    }
-                    catch (IOException e1) {
-                        showStackTrace(e1);
-                    }
-                }
-            });
+            popup.addSeparator();
+            addPopupActions(popup);
 
             mClickPoint = e.getPoint();
             popup.show(mVV, e.getX(), e.getY());
@@ -975,13 +851,156 @@ public class GamePanel extends javax.swing.JPanel
     }
 
     AbstractAction getActionNewGraphType() {
-        return new AbstractAction(generateOnlyAtomic ? "Generate Compositenly or Atomic" : "Generate Only Atomic") {
+        return new AbstractAction(generateOnlyAtomic ? "Generate Composite or Atomic" : "Generate Only Atomic") {
             private static final long serialVersionUID = 571719711573657790L;
 
             public void actionPerformed(ActionEvent e) {
                 generateOnlyAtomic = !generateOnlyAtomic;
             }
         };
+    }
+
+    public void addPopupActions(JPopupMenu popup) {
+
+        popup.add(new AbstractAction("Relayout Graph") {
+            private static final long serialVersionUID = 571719411573657791L;
+
+            public void actionPerformed(ActionEvent e) {
+                final AbstractLayout<Integer, MyEdge> layout = MyGraphLayoutFactory(mGraph);
+                mVV.setGraphLayout(layout);
+            }
+        });
+
+        popup.add(new AbstractAction("Update Original Colors") {
+            private static final long serialVersionUID = 571719411573657796L;
+
+            public void actionPerformed(ActionEvent e) {
+                mGraph.updateOriginalColor();
+                mVV.repaint();
+            }
+        });
+
+        popup.add(new AbstractAction(allowFreeExchange ? "Restrict to Unique Exchanges" : "Allow Free Edge Exchanges") {
+            private static final long serialVersionUID = 571719411573657798L;
+
+            public void actionPerformed(ActionEvent e) {
+                allowFreeExchange = !allowFreeExchange;
+            }
+        });
+
+        popup.add(new AbstractAction((mAutoPlayBob ? "Disable" : "Enable") + " Autoplay of Bob's Moves") {
+            private static final long serialVersionUID = 571719413573657798L;
+
+            public void actionPerformed(ActionEvent e) {
+                mAutoPlayBob = !mAutoPlayBob;
+            }
+        });
+
+        popup.addSeparator();
+
+        JMenu newGraph = new JMenu("New Random Graph");
+        for (int i = 0; i < actionRandomGraph.length; ++i) {
+            if (actionRandomGraph[i] != null)
+                newGraph.add(actionRandomGraph[i]);
+        }
+        newGraph.addSeparator();
+        newGraph.add(getActionNewGraphType());
+        popup.add(newGraph);
+
+        popup.add(new AbstractAction("Show GraphString") {
+            private static final long serialVersionUID = 545719411573657792L;
+
+            public void actionPerformed(ActionEvent e) {
+                JEditorPane text = new JEditorPane("text/plain", GraphString.write_graph(mGraph, mVV.getModel().getGraphLayout()));
+                text.setEditable(false);
+                text.setPreferredSize(new Dimension(300, 125));
+                JOptionPane.showMessageDialog(null, text, "GraphString Serialization", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+
+        popup.add(new AbstractAction("Load GraphString") {
+            private static final long serialVersionUID = 8636579131902717983L;
+
+            public void actionPerformed(ActionEvent e) {
+                String input = JOptionPane.showInputDialog(null, "Enter GraphString:", "");
+                if (input == null)
+                    return;
+                try {
+                    MyGraph g = GraphString.read_graph(input);
+                    setNewGraph(g);
+                }
+                catch (IOException e1) {
+                    JOptionPane.showMessageDialog(null, "Error in GraphString: " + e1, "GraphString", JOptionPane.INFORMATION_MESSAGE);
+
+                }
+            }
+        });
+
+        popup.add(new AbstractAction("Show graph6") {
+            private static final long serialVersionUID = 571719411573657792L;
+
+            public void actionPerformed(ActionEvent e) {
+                JTextArea text = new JTextArea(Graph6.write_graph6(mGraph));
+                JOptionPane.showMessageDialog(null, text, "graph6 Serialization", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+
+        popup.add(new AbstractAction("Load graph6/sparse6") {
+            private static final long serialVersionUID = 571719411573657792L;
+
+            public void actionPerformed(ActionEvent e) {
+                String input = JOptionPane.showInputDialog(null, "Enter graph6/sparse6 string:", "");
+                if (input == null)
+                    return;
+                MyGraph g = Graph6.read_graph6(input);
+                setNewGraph(g);
+            }
+        });
+
+        popup.add(new AbstractAction("Read GraphML") {
+            private static final long serialVersionUID = 571719411573657794L;
+
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    readGraphML();
+                }
+                catch (IOException e1) {
+                    showStackTrace(e1);
+                }
+                catch (GraphIOException e1) {
+                    showStackTrace(e1);
+                }
+            }
+        });
+
+        popup.add(new AbstractAction("Write GraphML") {
+            private static final long serialVersionUID = 571719411573657795L;
+
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    writeGraphML();
+                }
+                catch (IOException e1) {
+                    showStackTrace(e1);
+                }
+            }
+        });
+
+        popup.add(new AbstractAction("Write PDF") {
+            private static final long serialVersionUID = 571719411573657793L;
+
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    writePdf();
+                }
+                catch (FileNotFoundException e1) {
+                    showStackTrace(e1);
+                }
+                catch (DocumentException de) {
+                    System.err.println(de.getMessage());
+                }
+            }
+        });
     }
 
     void makeNewRandomGraph(int numVertex) {
