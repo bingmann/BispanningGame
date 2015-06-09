@@ -553,6 +553,9 @@ public class GamePanel extends javax.swing.JPanel
                         mGraph.markCycle(mMarkedge);
                     }
                     else {
+                        // flip edge
+                        putLog("Turn " + (++mTurnNum) + ": Bob flips edge " + edge.id + " " + edge.colorName(true) + " -> " + edge.colorName(false) + ".");
+
                         mHaveCycle = false;
                         mGraph.calcUniqueExchanges();
                     }
@@ -580,6 +583,14 @@ public class GamePanel extends javax.swing.JPanel
 
                 public void actionPerformed(ActionEvent e) {
                     allowFreeExchange = !allowFreeExchange;
+                }
+            });
+
+            popup.add(new AbstractAction((mAutoPlayBob ? "Disable" : "Enable") + " Autoplay of Bob's Moves") {
+                private static final long serialVersionUID = 571719413573657798L;
+
+                public void actionPerformed(ActionEvent e) {
+                    mAutoPlayBob = !mAutoPlayBob;
                 }
             });
 
