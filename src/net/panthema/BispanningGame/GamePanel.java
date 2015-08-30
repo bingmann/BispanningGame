@@ -721,6 +721,7 @@ public class GamePanel extends javax.swing.JPanel
     });
 
     AbstractAction[] actionRandomGraph = new AbstractAction[20 + 1];
+    ArrayList<AbstractAction> actionNamedGraph = new ArrayList<AbstractAction>();
 
     void makeActions() {
         actionRandomGraph[0] = new AbstractAction("Empty Graph") {
@@ -849,6 +850,64 @@ public class GamePanel extends javax.swing.JPanel
                 makeNewRandomGraph(20);
             }
         };
+
+        // Special Named Graphs
+
+        actionNamedGraph.add(new AbstractAction("K4 (complete, 4 vertices)") {
+            private static final long serialVersionUID = 571719411573657791L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V4:i0x0y0/i1x1y0/i2x1y1/i3x0y1/;E6:i0t0h1c1/i1t0h2c2/i2t0h3c1/i3t1h2c2/i4t1h3c2/i5t2h3c1/;");
+            }
+        });
+
+        actionNamedGraph.add(new AbstractAction("W5 (wheel, 5 vertices)") {
+            private static final long serialVersionUID = 571719411573657792L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V5:i0x10y10/i1x10y0/i2x0y10/i3x10y20/i4x20y10/;E8:i0t0h1c1/i1t1h2c1/i2t2h0c2/i3t2h3c1/i4t3h0c2/i5t3h4c1/i6t4h0c2/i7t4h1c2/;");
+            }
+        });
+
+        actionNamedGraph.add(new AbstractAction("K4 + K4 (2-clique sum, 6 vertices)") {
+            private static final long serialVersionUID = 571719411573657793L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V6:i0x0y0/i1x1y0/i2x1y1/i3x0y1/i4x2y0/i5x2y1/;E10:i0t0h1c1/i1t0h2c2/i2t0h3c1/i4t1h3c2/i5t2h3c2/i6t1h4c1/i7t1h5c1/i9t4h5c2/i10t4h2c2/i11t2h5c1/;");
+            }
+        });
+
+        actionNamedGraph.add(new AbstractAction("W6 (wheel, 6 vertices)") {
+            private static final long serialVersionUID = 571719411573657794L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V6:i0x0y0/i1x0y-1000/i2x-951y-309/i3x-588y809/i4x588y809/i5x951y-309/;E10:i0t0h1c1/i1t1h2c1/i2t0h2c2/i3t2h3c1/i4t0h3c2/i5t3h4c1/i6t0h4c2/i7t4h5c1/i8t0h5c2/i9t5h1c2/;");
+            }
+        });
+
+        actionNamedGraph.add(new AbstractAction("triangle free (7 vertices)") {
+            private static final long serialVersionUID = 571719411573657796L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V7:i0x2y0/i1x2y2/i2x2y4/i3x0y1/i4x0y3/i5x4y1/i6x4y3/;E12:i0t3h0c2/i1t3h1c1/i2t3h2c1/i3t4h0c1/i4t4h1c2/i5t4h2c2/i6t5h0c2/i7t5h1c2/i8t5h2c1/i9t6h0c1/i10t6h1c2/i11t6h2c1/;");
+            }
+        });
+
+        actionNamedGraph.add(new AbstractAction("2x2 K4 grid (9 vertices)") {
+            private static final long serialVersionUID = 571719411573657796L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V9:i0x0y0/i1x1y0/i2x2y0/i3x0y1/i4x1y1/i5x2y1/i6x0y2/i7x1y2/i8x2y2/;E16:i0t0h1c1/i1t0h4c2/i2t0h3c2/i3t1h2c2/i4t1h3c2/i5t1h5c1/i6t2h4c1/i7t2h5c1/i8t3h6c1/i9t3h7c1/i10t4h6c1/i11t4h8c2/i12t5h7c2/i13t5h8c2/i14t6h7c2/i15t7h8c1/;");
+            }
+        });
+
+        actionNamedGraph.add(new AbstractAction("3x3 K4 grid (16 vertices)") {
+            private static final long serialVersionUID = 571719411573657796L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V16:i0x0y0/i1x1y0/i2x2y0/i3x3y0/i4x0y1/i5x1y1/i6x2y1/i7x3y1/i8x0y2/i9x1y2/i10x2y2/i11x3y2/i12x0y3/i13x1y3/i14x2y3/i15x3y3/;E30:i0t0h1c1/i1t0h5c2/i2t0h4c2/i3t1h2c1/i4t1h4c2/i5t1h6c2/i6t2h3c2/i7t2h5c2/i8t2h7c1/i9t3h6c1/i10t3h7c1/i11t4h8c1/i12t4h9c1/i13t5h8c1/i14t5h10c1/i15t6h9c1/i16t6h11c2/i17t7h10c2/i18t7h11c2/i19t8h12c2/i20t8h13c2/i21t9h12c2/i22t9h14c2/i23t10h13c2/i24t10h15c1/i25t11h14c1/i26t11h15c1/i27t12h13c1/i28t13h14c1/i29t14h15c2/;");
+            }
+        });
     }
 
     AbstractAction getActionNewGraphType() {
@@ -917,6 +976,13 @@ public class GamePanel extends javax.swing.JPanel
         newGraph.addSeparator();
         newGraph.add(getActionNewGraphType());
         popup.add(newGraph);
+
+        JMenu newNamedGraph = new JMenu("New Named Graph");
+        for (int i = 0; i < actionNamedGraph.size(); ++i) {
+            if (actionNamedGraph.get(i) != null)
+                newNamedGraph.add(actionNamedGraph.get(i));
+        }
+        popup.add(newNamedGraph);
 
         popup.add(new AbstractAction("Show GraphString") {
             private static final long serialVersionUID = 545719411573657792L;
