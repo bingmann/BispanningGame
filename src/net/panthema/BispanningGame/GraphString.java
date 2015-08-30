@@ -112,7 +112,7 @@ class GraphString
     static int readInt(PushbackReader pr) throws IOException {
         int c;
         ByteArrayOutputStream ba = new ByteArrayOutputStream();
-        while (Character.isDigit(c = pr.read())) {
+        while ((c = pr.read()) != 0 && (Character.isDigit(c) || c == '-')) {
             ba.write(c);
         }
         pr.unread(c);

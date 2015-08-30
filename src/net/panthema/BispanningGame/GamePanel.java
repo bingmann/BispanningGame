@@ -84,6 +84,7 @@ import edu.uci.ics.jung.algorithms.layout.StaticLayout;
 import edu.uci.ics.jung.io.GraphIOException;
 import edu.uci.ics.jung.io.GraphMLWriter;
 import edu.uci.ics.jung.visualization.Layer;
+import edu.uci.ics.jung.visualization.MultiLayerTransformer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbstractGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.LayoutScalingControl;
@@ -862,12 +863,22 @@ public class GamePanel extends javax.swing.JPanel
 
     public void addPopupActions(JPopupMenu popup) {
 
+        popup.add(new AbstractAction("Center Graph") {
+            private static final long serialVersionUID = 571719411574657791L;
+
+            public void actionPerformed(ActionEvent e) {
+                centerAndScaleGraph();
+            }
+        });
+
         popup.add(new AbstractAction("Relayout Graph") {
             private static final long serialVersionUID = 571719411573657791L;
 
             public void actionPerformed(ActionEvent e) {
                 final AbstractLayout<Integer, MyEdge> layout = MyGraphLayoutFactory(mGraph);
+                mLayout = layout;
                 mVV.setGraphLayout(layout);
+                centerAndScaleGraph();
             }
         });
 
@@ -925,14 +936,7 @@ public class GamePanel extends javax.swing.JPanel
                 String input = JOptionPane.showInputDialog(null, "Enter GraphString:", "");
                 if (input == null)
                     return;
-                try {
-                    MyGraph g = GraphString.read_graph(input);
-                    setNewGraph(g);
-                }
-                catch (IOException e1) {
-                    JOptionPane.showMessageDialog(null, "Error in GraphString: " + e1, "GraphString", JOptionPane.INFORMATION_MESSAGE);
-
-                }
+                loadGraphString(input);
             }
         });
 
@@ -1011,6 +1015,55 @@ public class GamePanel extends javax.swing.JPanel
         setNewGraph(g);
     }
 
+    void centerAndScaleGraph() {
+
+        // clear layout
+        MultiLayerTransformer mlTransformer = mVV.getRenderContext().getMultiLayerTransformer();
+        mlTransformer.setToIdentity();
+
+        if (mGraph.getVertexCount() == 0)
+            return;
+
+        // calculate bounding box of layout
+        double xMin = Double.POSITIVE_INFINITY;
+        double yMin = Double.POSITIVE_INFINITY;
+        double xMax = Double.NEGATIVE_INFINITY;
+        double yMax = Double.NEGATIVE_INFINITY;
+
+        for (Integer v : mGraph.getVertices()) {
+            Point2D p = mLayout.transform(v);
+            if (p.getX() < xMin)
+                xMin = p.getX();
+            if (p.getX() > xMax)
+                xMax = p.getX();
+            if (p.getY() < yMin)
+                yMin = p.getY();
+            if (p.getY() > yMax)
+                yMax = p.getY();
+        }
+
+        System.err.println("xMin: " + xMin + " xMax: " + xMax + " yMin: " + yMin + " yMax: " + yMax);
+
+        // shift and scale layout
+        Dimension vv_size = mVV.getSize();
+        System.err.println("vv_size: " + vv_size);
+
+        double xSize = xMax - xMin;
+        double ySize = yMax - yMin;
+
+        double xRatio = vv_size.getWidth() / xSize;
+        double yRatio = vv_size.getHeight() / ySize;
+        double ratio = 0.75 * Math.min(xRatio, yRatio);
+
+        System.err.println("ratio: " + ratio);
+
+        mlTransformer.getTransformer(Layer.LAYOUT).scale(ratio, ratio, new Point2D.Double(0, 0));
+
+        double xShift = -xMin + (vv_size.getWidth() / ratio - xSize) / 2.0;
+        double yShift = -yMin + (vv_size.getHeight() / ratio - ySize) / 2.0;
+        mlTransformer.getTransformer(Layer.LAYOUT).translate(xShift, yShift);
+    }
+
     void setNewGraph(MyGraph g) {
 
         mGraph = g;
@@ -1034,6 +1087,17 @@ public class GamePanel extends javax.swing.JPanel
                 mLayout = MyGraphLayoutFactory(mGraph);
 
             mVV.setGraphLayout(mLayout);
+            centerAndScaleGraph();
+        }
+    }
+
+    public void loadGraphString(String input) {
+        try {
+            MyGraph g = GraphString.read_graph(input);
+            setNewGraph(g);
+        }
+        catch (IOException e1) {
+            JOptionPane.showMessageDialog(null, "Error in GraphString: " + e1, "GraphString", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
@@ -1066,7 +1130,7 @@ public class GamePanel extends javax.swing.JPanel
         PdfContentByte contentByte = writer.getDirectContent();
         PdfGraphics2D graphics2d = new PdfGraphics2D(contentByte, size.width, size.height, new DefaultFontMapper());
 
-        // Create a container to hold the visualisation
+        // Create a container to hold the visualization
         Container container = new Container();
         container.addNotify();
         container.add(mVV);
@@ -1077,7 +1141,7 @@ public class GamePanel extends javax.swing.JPanel
         graphics2d.dispose();
         document.close();
 
-        // Put mVV pack onto visible plane
+        // Put mVV back onto visible plane
         setLayout(new BorderLayout());
         add(mVV, BorderLayout.CENTER);
     }
@@ -1132,5 +1196,6 @@ public class GamePanel extends javax.swing.JPanel
 
         mLayout = new StaticLayout<Integer, MyEdge>(mGraph, gml);
         mVV.setGraphLayout(mLayout);
+        centerAndScaleGraph();
     }
 }
