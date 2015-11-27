@@ -10,31 +10,35 @@
   <name>BispanningGame</name>
   <url>http://panthema.net/2014/bispanning</url>
 
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>net.sf.jung</groupId>
       <artifactId>jung-graph-impl</artifactId>
-      <version>2.0.1</version>
+      <version>[2.0.1,)</version>
     </dependency>
     <dependency>
       <groupId>net.sf.jung</groupId>
       <artifactId>jung-algorithms</artifactId>
-      <version>2.0.1</version>
+      <version>[2.0.1,)</version>
     </dependency>
     <dependency>
       <groupId>net.sf.jung</groupId>
       <artifactId>jung-visualization</artifactId>
-      <version>2.0.1</version>
+      <version>[2.0.1,)</version>
     </dependency>
     <dependency>
       <groupId>net.sf.jung</groupId>
       <artifactId>jung-io</artifactId>
-      <version>2.0.1</version>
+      <version>[2.0.1,)</version>
     </dependency>
     <dependency>
       <groupId>com.itextpdf</groupId>
       <artifactId>itextpdf</artifactId>
-      <version>[5.0,)</version>
+      <version>RELEASE</version>
     </dependency>
   </dependencies>
 

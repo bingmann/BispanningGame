@@ -228,6 +228,7 @@ public class GamePanel extends javax.swing.JPanel
         JPanel panelButtons = new JPanel();
         panelSouth.add(panelButtons);
         panelButtons.setLayout(new GridLayout(0, 1, 0, 0));
+        panelSouth.setPreferredSize(new Dimension(800, 60));
 
         final JButton btnNewGraph = new JButton("New Graph");
         btnNewGraph.addMouseListener(new MouseAdapter() {
@@ -857,7 +858,7 @@ public class GamePanel extends javax.swing.JPanel
             private static final long serialVersionUID = 571719411573657791L;
 
             public void actionPerformed(ActionEvent e) {
-                loadGraphString("V4:i0x0y0/i1x1y0/i2x1y1/i3x0y1/;E6:i0t0h1c1/i1t0h2c2/i2t0h3c1/i3t1h2c2/i4t1h3c2/i5t2h3c1/;");
+                loadGraphString("V4:i0x0y0/i1x1y0/i2x1y1/i3x0y1/;E6:i0t0h1c1/i1t0h2c1/i2t0h3c2/i3t1h2c2/i4t1h3c2/i5t2h3c1/;");
             }
         });
 
@@ -873,7 +874,15 @@ public class GamePanel extends javax.swing.JPanel
             private static final long serialVersionUID = 571719411573657793L;
 
             public void actionPerformed(ActionEvent e) {
-                loadGraphString("V6:i0x0y0/i1x1y0/i2x1y1/i3x0y1/i4x2y0/i5x2y1/;E10:i0t0h1c1/i1t0h2c2/i2t0h3c1/i4t1h3c2/i5t2h3c2/i6t1h4c1/i7t1h5c1/i9t4h5c2/i10t4h2c2/i11t2h5c1/;");
+                loadGraphString("V6:i0x0y0/i1x1y0/i2x1y1/i3x0y1/i4x2y0/i5x2y1/;E10:i0t0h1c1/i1t0h2c2/i2t0h3c1/i4t1h3c2/i5t2h3c2/i6t1h4c2/i7t1h5c1/i9t4h5c2/i10t4h2c1/i11t2h5c1/;");
+            }
+        });
+
+        actionNamedGraph.add(new AbstractAction("B 6,12 difficult (6 vertices)") {
+            private static final long serialVersionUID = 571719411573457792L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V6:i0x0y12/i1x20y15/i2x40y12/i3x10y30/i4x20y0/i5x30y30/;E10:i0t0h3c2/i1t1h3c1/i2t2h3c1/i3t0h4c1/i4t1h4c2/i5t2h4c2/i6t0h5c1/i7t1h5c2/i8t2h5c1/i9t3h5c2/;");
             }
         });
 
@@ -885,11 +894,27 @@ public class GamePanel extends javax.swing.JPanel
             }
         });
 
-        actionNamedGraph.add(new AbstractAction("triangle free (7 vertices)") {
+        actionNamedGraph.add(new AbstractAction("B7,1 triangle free (7 vertices)") {
             private static final long serialVersionUID = 571719411573657796L;
 
             public void actionPerformed(ActionEvent e) {
-                loadGraphString("V7:i0x2y0/i1x2y2/i2x2y4/i3x0y1/i4x0y3/i5x4y1/i6x4y3/;E12:i0t3h0c2/i1t3h1c1/i2t3h2c1/i3t4h0c1/i4t4h1c2/i5t4h2c2/i6t5h0c2/i7t5h1c2/i8t5h2c1/i9t6h0c1/i10t6h1c2/i11t6h2c1/;");
+                loadGraphString("V7:i0x2y0/i1x2y2/i2x2y4/i3x0y1/i4x0y3/i5x4y1/i6x4y3/;E12:i0t3h0c2/i1t3h1c1/i2t3h2c1/i3t4h0c2/i4t4h1c2/i5t4h2c1/i6t5h0c1/i7t5h1c2/i8t5h2c2/i9t6h0c1/i10t6h1c1/i11t6h2c2/;");
+            }
+        });
+
+        actionNamedGraph.add(new AbstractAction("B8,1 triangle free (8 vertices)") {
+            private static final long serialVersionUID = 571719411573657798L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V8:i0x10y20/i1x20y10/i2x40y35/i3x0y35/i4x40y15/i5x0y15/i6x30y30/i7x20y40/;E14:i0t0h4c1/i1t1h4c2/i2t2h4c1/i3t0h5c1/i4t1h5c2/i5t3h5c2/i6t0h6c2/i7t1h6c1/i8t2h6c2/i9t3h6c1/i10t0h7c2/i11t1h7c1/i12t2h7c1/i13t3h7c2/;");
+            }
+        });
+
+        actionNamedGraph.add(new AbstractAction("B9,1 difficult (9 vertices)") {
+            private static final long serialVersionUID = 571719411573657796L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V9:i0x1y0/i1x3y2/i2x1y2/i3x1y1/i4x3y1/i5x0y1/i6x0y2/i7x2y2/i8x2y1/;E16:i0t0h4c1/i1t1h4c1/i2t0h5c2/i3t2h5c2/i4t3h5c1/i5t0h6c2/i6t2h6c1/i7t3h6c2/i8t1h7c1/i9t2h7c1/i10t3h7c2/i11t4h7c2/i12t0h8c1/i13t1h8c2/i14t2h8c2/i15t3h8c1/;");
             }
         });
 
@@ -901,11 +926,83 @@ public class GamePanel extends javax.swing.JPanel
             }
         });
 
+        actionNamedGraph.add(new AbstractAction("B10,1 difficult (10 vertices)") {
+            private static final long serialVersionUID = 571419411573657796L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V10:i0x20y6/i1x0y-25/i2x0y25/i3x-20y6/i4x30y-12/i5x-30y13/i6x30y13/i7x-30y-12/i8x-10y-10/i9x10y-10/;E18:i0t0h4c1/i1t1h4c2/i2t0h5c2/i3t2h5c1/i4t2h6c2/i5t3h6c1/i6t4h6c2/i7t1h7c1/i8t3h7c2/i9t5h7c1/i10t0h8c1/i11t1h8c2/i12t2h8c1/i13t3h8c2/i14t0h9c2/i15t1h9c1/i16t2h9c2/i17t3h9c1/;");
+            }
+        });
+
+        actionNamedGraph.add(new AbstractAction("B10,2 difficult (10 vertices)") {
+            private static final long serialVersionUID = 571419411573657796L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V10:i0x10y10/i1x10y20/i2x30y20/i3x30y10/i4x0y25/i5x40y5/i6x40y25/i7x0y5/i8x20y10/i9x20y20/;E18:i0t0h4c2/i1t1h4c1/i2t2h5c2/i3t3h5c1/i4t2h6c1/i5t3h6c2/i6t4h6c1/i7t0h7c1/i8t1h7c2/i9t5h7c2/i10t0h8c1/i11t1h8c1/i12t2h8c2/i13t3h8c2/i14t0h9c2/i15t1h9c2/i16t2h9c1/i17t3h9c1/;");
+            }
+        });
+
+        actionNamedGraph.add(new AbstractAction("B11,1 difficult (11 vertices)") {
+            private static final long serialVersionUID = 571419411573657796L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V11:i0x30y24/i1x0y24/i2x15y0/i3x25y17/i4x5y17/i5x15y20/i6x30y8/i7x0y8/i8x20y8/i9x15y30/i10x10y8/;E20:i0t0h5c1/i1t1h5c2/i2t0h6c2/i3t2h6c2/i4t3h6c1/i5t1h7c1/i6t2h7c1/i7t4h7c2/i8t2h8c2/i9t3h8c1/i10t4h8c1/i11t5h8c2/i12t0h9c2/i13t1h9c1/i14t3h9c2/i15t4h9c1/i16t2h10c1/i17t3h10c2/i18t4h10c2/i19t5h10c1/;");
+            }
+        });
+
+        actionNamedGraph.add(new AbstractAction("B11,2 difficult (11 vertices)") {
+            private static final long serialVersionUID = 571419411573657797L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V11:i0x3y2/i1x1y2/i2x3y1/i3x1y1/i4x4y1/i5x0y1/i6x4y2/i7x0y2/i8x2y2/i9x2y0/i10x2y1/;E20:i0t0h4c1/i1t1h5c2/i2t0h6c2/i3t2h6c1/i4t4h6c2/i5t1h7c1/i6t3h7c2/i7t5h7c1/i8t0h8c2/i9t1h8c1/i10t2h8c1/i11t3h8c2/i12t2h9c2/i13t3h9c1/i14t4h9c2/i15t5h9c1/i16t0h10c1/i17t1h10c2/i18t2h10c2/i19t3h10c1/;");
+            }
+        });
+
+        actionNamedGraph.add(new AbstractAction("B12,1 difficult (12 vertices)") {
+            private static final long serialVersionUID = 571419411573657796L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V12:i0x30y30/i1x10y30/i2x30y0/i3x10y0/i4x25y10/i5x20y20/i6x40y20/i7x0y20/i8x30y20/i9x10y20/i10x15y10/i11x20y0/;E22:i0t0h5c1/i1t1h5c2/i2t0h6c2/i3t2h6c1/i4t1h7c1/i5t3h7c2/i6t1h8c1/i7t2h8c2/i8t4h8c1/i9t6h8c2/i10t0h9c2/i11t3h9c1/i12t4h9c2/i13t7h9c1/i14t2h10c1/i15t3h10c1/i16t4h10c2/i17t5h10c2/i18t2h11c2/i19t3h11c2/i20t4h11c1/i21t5h11c1/;");
+            }
+        });
+
+        actionNamedGraph.add(new AbstractAction("B12,2 difficult (12 vertices)") {
+            private static final long serialVersionUID = 571419411573657796L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V12:i0x10y0/i1x30y0/i2x30y20/i3x15y30/i4x12y40/i5x40y30/i6x0y10/i7x40y10/i8x25y30/i9x10y20/i10x0y30/i11x28y40/;E22:i0t0h5c1/i1t1h5c2/i2t0h6c1/i3t2h6c1/i4t1h7c2/i5t2h7c2/i6t2h8c1/i7t3h8c1/i8t4h8c2/i9t5h8c2/i10t1h9c1/i11t3h9c1/i12t4h9c2/i13t6h9c2/i14t0h10c2/i15t3h10c2/i16t4h10c1/i17t7h10c1/i18t2h11c2/i19t3h11c2/i20t4h11c1/i21t5h11c1/;");
+            }
+        });
+
+        actionNamedGraph.add(new AbstractAction("B12,3 difficult (12 vertices)") {
+            private static final long serialVersionUID = 571419411573657796L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V12:i0x10y5/i1x10y25/i2x30y10/i3x30y20/i4x10y10/i5x10y20/i6x30y5/i7x30y25/i8x20y10/i9x3y15/i10x37y15/i11x20y20/;E22:i0t0h4c2/i1t1h5c1/i2t0h6c1/i3t2h6c2/i4t1h7c2/i5t3h7c1/i6t2h8c1/i7t3h8c2/i8t4h8c2/i9t5h8c1/i10t0h9c1/i11t1h9c2/i12t4h9c1/i13t5h9c2/i14t2h10c1/i15t3h10c2/i16t6h10c1/i17t7h10c2/i18t2h11c2/i19t3h11c1/i20t4h11c1/i21t5h11c2/;");
+            }
+        });
+
+        actionNamedGraph.add(new AbstractAction("B12,4 difficult (12 vertices)") {
+            private static final long serialVersionUID = 571419411573657796L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V12:i0x10y10/i1x25y20/i2x40y10/i3x40y0/i4x10y0/i5x10y20/i6x50y10/i7x0y10/i8x40y20/i9x20y10/i10x30y10/i11x25y0/;E22:i0t0h5c1/i1t1h5c2/i2t2h6c1/i3t3h6c2/i4t0h7c2/i5t4h7c1/i6t5h7c2/i7t1h8c1/i8t2h8c2/i9t6h8c1/i10t0h9c1/i11t1h9c2/i12t3h9c1/i13t4h9c2/i14t1h10c1/i15t2h10c2/i16t3h10c1/i17t4h10c2/i18t0h11c2/i19t2h11c1/i20t3h11c2/i21t4h11c1/;");
+            }
+        });
+
         actionNamedGraph.add(new AbstractAction("3x3 K4 grid (16 vertices)") {
             private static final long serialVersionUID = 571719411573657796L;
 
             public void actionPerformed(ActionEvent e) {
                 loadGraphString("V16:i0x0y0/i1x1y0/i2x2y0/i3x3y0/i4x0y1/i5x1y1/i6x2y1/i7x3y1/i8x0y2/i9x1y2/i10x2y2/i11x3y2/i12x0y3/i13x1y3/i14x2y3/i15x3y3/;E30:i0t0h1c1/i1t0h5c2/i2t0h4c2/i3t1h2c1/i4t1h4c2/i5t1h6c2/i6t2h3c2/i7t2h5c2/i8t2h7c1/i9t3h6c1/i10t3h7c1/i11t4h8c1/i12t4h9c1/i13t5h8c1/i14t5h10c1/i15t6h9c1/i16t6h11c2/i17t7h10c2/i18t7h11c2/i19t8h12c2/i20t8h13c2/i21t9h12c2/i22t9h14c2/i23t10h13c2/i24t10h15c1/i25t11h14c1/i26t11h15c1/i27t12h13c1/i28t13h14c1/i29t14h15c2/;");
+            }
+        });
+
+        actionNamedGraph.add(new AbstractAction("B18,1 square-free (18 vertices)") {
+            private static final long serialVersionUID = 571719411573657796L;
+
+            public void actionPerformed(ActionEvent e) {
+                loadGraphString("V18:i0x0y0/i1x100y0/i2x200y0/i3x300y0/i4x300y100/i5x300y200/i6x200y200/i7x100y200/i8x0y200/i9x0y100/i10x40y40/i11x150y25/i12x260y40/i13x260y160/i14x150y175/i15x40y160/i16x175y70/i17x125y130/;E34:i0t0h1c1/i1t1h2c2/i2t2h3c2/i3t3h4c1/i4t4h5c2/i5t5h6c1/i6t6h7c2/i7t7h8c1/i8t8h9c1/i9t9h0c2/i10t0h10c1/i11t3h12c1/i12t5h13c1/i13t8h15c2/i14t9h16c1/i15t4h17c2/i16t4h11c2/i17t9h14c2/i18t1h15c1/i19t1h17c1/i20t2h16c1/i21t2h13c2/i22t6h12c1/i23t6h16c2/i24t7h17c1/i25t7h10c2/i26t10h11c2/i27t10h13c2/i28t11h16c1/i29t11h15c2/i30t12h15c2/i31t12h14c2/i32t13h14c1/i33t14h17c1/;");
             }
         });
     }
