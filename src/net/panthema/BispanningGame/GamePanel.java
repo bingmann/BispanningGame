@@ -227,11 +227,11 @@ public class GamePanel extends javax.swing.JPanel
 
         JPanel panelButtons = new JPanel();
         panelSouth.add(panelButtons);
-        panelButtons.setLayout(new GridLayout(0, 1, 0, 0));
+        panelButtons.setLayout(new GridLayout(2, 2, 0, 0));
         panelSouth.setPreferredSize(new Dimension(800, 60));
 
-        final JButton btnNewGraph = new JButton("New Graph");
-        btnNewGraph.addMouseListener(new MouseAdapter() {
+        final JButton btnNewRandomGraph = new JButton("New Random Graph");
+        btnNewRandomGraph.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 JPopupMenu popup = new JPopupMenu();
@@ -243,12 +243,37 @@ public class GamePanel extends javax.swing.JPanel
                 popup.addSeparator();
                 popup.add(getActionNewGraphType());
 
-                popup.show(btnNewGraph, e.getX(), e.getY());
+                popup.show(btnNewRandomGraph, e.getX(), e.getY());
             }
         });
-        panelButtons.add(btnNewGraph);
+        panelButtons.add(btnNewRandomGraph);
 
-        JButton btnOptions = new JButton("Options");
+        final JButton btnNewNamedGraph = new JButton("New Named Graph");
+        btnNewNamedGraph.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JPopupMenu popup = new JPopupMenu();
+
+                for (int i = 0; i < actionNamedGraph.size(); ++i) {
+                    if (actionNamedGraph.get(i) != null)
+                        popup.add(actionNamedGraph.get(i));
+                }
+
+                popup.show(btnNewNamedGraph, e.getX(), e.getY());
+            }
+        });
+        panelButtons.add(btnNewNamedGraph);
+
+        final JButton btnRelayout = new JButton("Relayout");
+        btnRelayout.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+            	relayoutGraph();
+            }
+        });
+        panelButtons.add(btnRelayout);
+
+        final JButton btnOptions = new JButton("Options");
         btnOptions.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -257,7 +282,7 @@ public class GamePanel extends javax.swing.JPanel
                 addPopupActions(popup);
                 popup.addSeparator();
 
-                popup.show(btnNewGraph, e.getX(), e.getY());
+                popup.show(btnOptions, e.getX(), e.getY());
             }
         });
         panelButtons.add(btnOptions);
@@ -1031,10 +1056,7 @@ public class GamePanel extends javax.swing.JPanel
             private static final long serialVersionUID = 571719411573657791L;
 
             public void actionPerformed(ActionEvent e) {
-                final AbstractLayout<Integer, MyEdge> layout = MyGraphLayoutFactory(mGraph);
-                mLayout = layout;
-                mVV.setGraphLayout(layout);
-                centerAndScaleGraph();
+            	relayoutGraph();
             }
         });
 
@@ -1178,6 +1200,13 @@ public class GamePanel extends javax.swing.JPanel
         setNewGraph(g);
     }
 
+    void relayoutGraph() {
+        final AbstractLayout<Integer, MyEdge> layout = MyGraphLayoutFactory(mGraph);
+        mLayout = layout;
+        mVV.setGraphLayout(layout);
+        centerAndScaleGraph();
+    }
+    
     void centerAndScaleGraph() {
 
         // clear layout
