@@ -441,18 +441,12 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
 
         AlgBispanning ab = new AlgBispanning(this);
         if (ab.isOkay()) {
+            for (MyEdge ei : getEdges()) {
+                if (ei.origColor == 0) ei.origColor = ei.color;
+            }
             message = "";
             calcUniqueExchanges();
             System.out.println("Graph is bispanning!");
-
-            if (getVertexCount() <= 14) {
-                if (isAtomicBispanner()) {
-                    message = "atomic";
-                }
-                else {
-                    message = "composite";
-                }
-            }
         }
         else {
             message = "Graph is not bispanning!";
@@ -480,6 +474,16 @@ class MyGraph extends SparseMultigraph<Integer, MyEdge>
                 edgeMax = e.id;
         }
         return edgeMax;
+    }
+
+    /** Return number of finished edges */
+    int finishedEdges() {
+        int count = 0;
+        for (MyEdge ei : getEdges()) {
+            if (ei.origColor != ei.color)
+                ++count;
+        }
+        return count;
     }
 
     /** Increment binary number stored in the vector v */

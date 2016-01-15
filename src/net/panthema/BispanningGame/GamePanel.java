@@ -144,7 +144,7 @@ public class GamePanel extends javax.swing.JPanel
     protected boolean generateOnlyAtomic = false;
 
     /** Allow freer non-unique edge exchanges */
-    protected boolean allowFreeExchange = false;
+    protected boolean allowFreeExchange = true;
 
     /** Image of Alice and Bob */
     BufferedImage ImageAlice, ImageBob;
@@ -155,8 +155,8 @@ public class GamePanel extends javax.swing.JPanel
 
         setBackground(Color.WHITE);
 
-        ImageAlice = ImageIO.read(ClassLoader.getSystemResourceAsStream("net/panthema/BispanningGame/images/Alice.png"));
-        ImageBob = ImageIO.read(ClassLoader.getSystemResourceAsStream("net/panthema/BispanningGame/images/Bob.png"));
+        ImageAlice = ImageIO.read(getClass().getClassLoader().getResourceAsStream("net/panthema/BispanningGame/images/Alice.png"));
+        ImageBob = ImageIO.read(getClass().getClassLoader().getResourceAsStream("net/panthema/BispanningGame/images/Bob.png"));
 
         logTextArea = new JTextArea();
 
@@ -164,6 +164,7 @@ public class GamePanel extends javax.swing.JPanel
         mLayout = MyGraphLayoutFactory(mGraph);
 
         mVV = new VisualizationViewer<Integer, MyEdge>(mLayout);
+        mVV.setSize(new Dimension(1000,800));
         mVV.setBackground(Color.WHITE);
 
         // Bob's play does not repeat.
@@ -268,7 +269,7 @@ public class GamePanel extends javax.swing.JPanel
         btnRelayout.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-            	relayoutGraph();
+                relayoutGraph();
             }
         });
         panelButtons.add(btnRelayout);
@@ -364,6 +365,7 @@ public class GamePanel extends javax.swing.JPanel
         public Stroke transform(MyEdge e) {
 
             int size = (e.inCycle || e.inCut || e.isUE) ? THICK : THIN;
+            if (allowFreeExchange) size = THICK;
 
             if (e == mHoverEdge && (e.isUE || allowFreeExchange))
                 size += 2;
@@ -576,6 +578,8 @@ public class GamePanel extends javax.swing.JPanel
                     if (mAutoPlayBob) {
                         mPlayBob.start();
                     }
+
+                    updateGraphMessage();
                 }
             }
             else {
@@ -597,6 +601,8 @@ public class GamePanel extends javax.swing.JPanel
                         mHaveCycle = false;
                         mGraph.calcUniqueExchanges();
                     }
+
+                    updateGraphMessage();
                 }
             }
 
@@ -742,6 +748,7 @@ public class GamePanel extends javax.swing.JPanel
                 System.out.println("Bob could not fix the graph?");
             }
 
+            updateGraphMessage();
             repaint();
         }
     });
@@ -1056,15 +1063,18 @@ public class GamePanel extends javax.swing.JPanel
             private static final long serialVersionUID = 571719411573657791L;
 
             public void actionPerformed(ActionEvent e) {
-            	relayoutGraph();
+                relayoutGraph();
             }
         });
 
-        popup.add(new AbstractAction("Update Original Colors") {
+        popup.add(new AbstractAction("Reset Board Colors") {
             private static final long serialVersionUID = 571719411573657796L;
 
             public void actionPerformed(ActionEvent e) {
                 mGraph.updateOriginalColor();
+                mTurnNum = 0;
+                putLog("Resetting game graph's colors.");
+                updateGraphMessage();
                 mVV.repaint();
             }
         });
@@ -1074,6 +1084,7 @@ public class GamePanel extends javax.swing.JPanel
 
             public void actionPerformed(ActionEvent e) {
                 allowFreeExchange = !allowFreeExchange;
+                mVV.repaint();
             }
         });
 
@@ -1206,7 +1217,32 @@ public class GamePanel extends javax.swing.JPanel
         mVV.setGraphLayout(layout);
         centerAndScaleGraph();
     }
-    
+
+    void updateGraphMessage() {
+        String msg = "";
+
+        int round = mTurnNum / 2 + 1;
+        int min_rounds = mGraph.getEdgeCount() / 2;
+
+        if (mGraph.getVertexCount() == 0) {
+        }
+        else if (mGraph.finishedEdges() != mGraph.getEdgeCount()) {
+            msg = "Round " + round;
+            msg += " of minimum " + min_rounds;
+            msg += ", remaining edges: " + (mGraph.getEdgeCount() - mGraph.finishedEdges()) + ".";
+        }
+        else {
+            if (round == min_rounds)
+                msg = "Congratulations! You won in the minimum number of rounds! Terrific!";
+            else {
+                msg = "Congratulations! You won after " + round + " of minimum " + min_rounds + " rounds!";
+                msg += " You needed " + (round - min_rounds) + " extra rounds.";
+            }
+        }
+
+        mGraph.message = msg;
+    }
+
     void centerAndScaleGraph() {
 
         // clear layout
@@ -1268,8 +1304,19 @@ public class GamePanel extends javax.swing.JPanel
 
         putLog("Starting new game with " + mGraph.getEdgeCount() + " edges.");
 
+        if (mGraph.getVertexCount() > 0 && mGraph.getVertexCount() <= 14) {
+            if (mGraph.isAtomicBispanner()) {
+                putLog("New graph is an atomic bispanning graph.");
+            }
+            else {
+                putLog("New graph is a composite bispanning graph.");
+            }
+        }
+
         mGraph.calcUniqueExchanges();
         mGraph.updateOriginalColor();
+
+        updateGraphMessage();
 
         if (mVV != null) {
 
