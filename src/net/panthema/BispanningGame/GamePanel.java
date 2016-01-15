@@ -292,6 +292,9 @@ public class GamePanel extends javax.swing.JPanel
         panelSouth.add(scrollPane);
 
         logTextArea.setEditable(false);
+
+        setSize(new Dimension(1000, 800));
+        relayoutGraph();
     }
 
     static void showStackTrace(Exception e) {
