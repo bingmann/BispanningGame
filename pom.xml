@@ -55,6 +55,7 @@
     </resources>
 
     <plugins>
+      <!-- make shaded jar contains only required dependencies -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
@@ -75,6 +76,40 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+
+      <!-- add jar manifest -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Permissions>sandbox</Permissions>
+              <Application-Name>Bispanning Graph Game</Application-Name>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jarsigner-plugin</artifactId>
+        <version>1.2</version>
+        <executions>
+          <execution>
+            <id>sign</id>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <keystore>~/.gnupg/codesigning.keystore</keystore>
+          <alias>tb</alias>
+          <storepass>changeit</storepass>
+        </configuration>
       </plugin>
     </plugins>
 
